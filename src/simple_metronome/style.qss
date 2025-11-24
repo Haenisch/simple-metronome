@@ -1,0 +1,134 @@
+/* Widget */
+QWidget {
+    background-color: #2b2b2b;
+    color: #eeeeee;
+    font-family: "Segoe UI Symbol", Tahoma, Geneva, Verdana, sans-serif;
+    font-size: 10pt;
+}
+
+
+/* Buttons */
+QPushButton {
+    background-color: #3b3b3b;
+    border: 0px solid #5a5a5a;
+    border-radius: 8px;
+    padding: 6px 12px;
+    color: #dddddd;
+    font-size: 12pt;
+}
+
+QPushButton:hover {
+    background-color: #505050;
+    border-color: #7a7a7a;
+}
+
+QPushButton:pressed {
+    background-color: #2b2b2b;
+    border-color: #4a4a4a;
+}
+
+QPushButton#pushButton_decreaseTempo {
+    background-color: #505050;
+    border-radius: 8px;
+}
+
+QPushButton#pushButton_increaseTempo {
+    background-color: #505050;
+    border-radius: 8px;
+}
+
+
+/* Labels */
+QLabel {
+    color: #dddddd;
+}
+
+
+/* Line Edits */
+QLineEdit, QTextEdit {
+    background-color: #3b3b3b;
+    border: 2px solid #5a5a5a;
+    border-radius: 8px;
+    padding: 5px;
+    color: #eeeeee;
+}
+
+
+/* Check Boxes */
+QCheckBox {
+    spacing: 8px;
+    color: #dddddd;
+}
+
+QCheckBox::indicator {
+    width: 16px;
+    height: 16px;
+}
+
+QCheckBox::indicator:unchecked {
+    border: 2px solid #5a5a5a;
+    background: #2b2b2b;
+    border-radius: 4px;
+}
+
+QCheckBox::indicator:checked {
+    border: 2px solid #7a7a7a;
+    background: #4a90e2;
+    border-radius: 4px;
+}
+
+
+/* Group Boxes */
+QGroupBox {
+    background-color: #3b3b3b;
+    border: 1px solid #5a5a5a;
+    border-radius: 8px;
+}
+
+
+/* Scroll Bars */
+QScrollBar:vertical {
+    background: #2b2b2b;
+    width: 12px;
+    margin: 16px 0 16px 0;
+    border-radius: 6px;
+}
+
+QScrollBar::handle:vertical {
+    background: #555555;
+    min-height: 20px;
+    border-radius: 6px;
+}
+
+QScrollBar::handle:vertical:hover {
+    background: #666666;
+}
+
+QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical {
+    height: 0px;
+}
+
+QScrollBar::add-page:vertical, QScrollBar::sub-page:vertical {
+    background: none;
+}
+
+
+/*Sliders*/
+QSlider::horizontal {
+    background: #3b3b3b;
+}
+
+
+/*Spin Boxes*/
+QSpinBox {
+    background-color: #3b3b3b;
+    selection-background-color: #3b3b3b;
+    font-size: 20pt;
+}
+
+QSpinBox#spinBox_tempo {
+    background-color: #505050;
+    border-radius: 8px;
+    font-size: 40pt;
+    selection-background-color: #505050;
+}
