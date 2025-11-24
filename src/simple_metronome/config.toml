@@ -1,0 +1,63 @@
+[general_settings]
+backbeat_volume = 80
+downbeat_volume = 100
+downbeat_accent = true
+time_signature_numerator = 4
+time_signature_denominator = 4
+tempo = 150
+volume = 67
+
+[preset1]
+backbeat_sound_file = "./sounds/low click - backbeat.wav"
+downbeat_sound_file = "./sounds/low click - downbeat.wav"
+backbeat_volume = 100
+downbeat_volume = 100
+downbeat_accent = true
+time_signature_numerator = 4
+time_signature_denominator = 4
+tempo = 100
+volume = 80
+
+[preset2]
+backbeat_sound_file = "./sounds/high click - backbeat.wav"
+downbeat_sound_file = "./sounds/high click - downbeat.wav"
+backbeat_volume = 100
+downbeat_volume = 100
+downbeat_accent = true
+time_signature_numerator = 4
+time_signature_denominator = 4
+tempo = 100
+volume = 80
+
+[preset3]
+backbeat_sound_file = "./sounds/click.wav"
+downbeat_sound_file = "./sounds/click.wav"
+backbeat_volume = 100
+downbeat_volume = 100
+downbeat_accent = true
+time_signature_numerator = 4
+time_signature_denominator = 4
+tempo = 100
+volume = 80
+
+[preset4]
+backbeat_sound_file = "./sounds/click.wav"
+downbeat_sound_file = "./sounds/click.wav"
+backbeat_volume = 100
+downbeat_volume = 100
+downbeat_accent = true
+time_signature_numerator = 4
+time_signature_denominator = 4
+tempo = 100
+volume = 80
+
+[preset5]
+backbeat_sound_file = "./sounds/click.wav"
+downbeat_sound_file = "./sounds/click.wav"
+backbeat_volume = 100
+downbeat_volume = 100
+downbeat_accent = true
+time_signature_numerator = 4
+time_signature_denominator = 4
+tempo = 100
+volume = 80

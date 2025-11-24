@@ -1,0 +1,23 @@
+[project]
+name = "simple-metronome"
+version = "0.1.0"
+description = "A simple metronome GUI application built with PySide6."
+authors = [
+    {name = "Christoph Hänisch",email = "christoph.haenisch@rwth-aachen.de"}
+]
+license = {text = "GPL-3.0-or-later"}
+readme = "README.md"
+requires-python = "<3.15,>=3.9"
+dependencies = [
+    "pyside6 (>=6.10.1,<7.0.0)",
+    "toml (>=0.10.2,<0.11.0)",
+]
+
+
+[tool.poetry]
+packages = [{include = "simple_metronome", from = "src"}]
+
+
+[build-system]
+requires = ["poetry-core>=2.0.0,<3.0.0"]
+build-backend = "poetry.core.masonry.api"
