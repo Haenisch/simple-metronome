@@ -17,6 +17,8 @@
 #   pyside6-uic .\main_window.ui -o ui_main_window.py
 #   poetry run pyside6-uic .\main_window.ui -o ui_main_window.py
 
+import time
+
 from PySide6.QtCore import Qt, QTimer, QUrl
 from PySide6.QtGui import QKeySequence, QShortcut
 from PySide6.QtMultimedia import QSoundEffect
@@ -72,13 +74,14 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
         self.timer = QTimer()
         self.timer.setTimerType(Qt.PreciseTimer)  # type: ignore
-        self.timer.timeout.connect(self.play_sound)
+        self.timer.timeout.connect(self.play_sound_callback)
         self.player_downbeat = QSoundEffect()
         self.player_downbeat.setLoopCount(1)
         self.player_backbeat = QSoundEffect()
         self.player_backbeat.setLoopCount(1)
         self.playing = False
         self.current_beat = 0
+        self.next_beat_system_time_ns = 0  # system time for the next beat in nanoseconds
 
         # Load the configuration.
         self.config = {}
@@ -246,11 +249,17 @@ class MainWindow(QMainWindow, Ui_MainWindow):
     def on_play_stop_clicked(self):
         """Play or stop the metronome."""
         if not self.playing:
+            # Start playing the metronome immediately.
             self.playing = True
-            self.current_beat = 0
-            interval = 60000 // self.tempo  # duration of a beat in milliseconds
-            self.timer.start(interval)
-            self.play_sound()  # play immediately
+            self.current_beat = 0  # reset beat counter
+            self.play_beat_sound()
+            # Calculate the system time for the next beat and setup a single-shot
+            # timer for calling the callback function. Note, in each callback, we
+            # will restart the timer as long as the metronome is playing.
+            duration_between_beats_ns = 60_000_000_000 // self.tempo
+            self.next_beat_system_time_ns = time.time() * 1_000_000_000 + duration_between_beats_ns
+            QTimer.singleShot(duration_between_beats_ns//1_000_000, self.play_sound_callback)
+            # TODO: visual beat indication
         else:
             self.playing = False
             self.timer.stop()
@@ -320,10 +329,12 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.set_volume(value)
 
 
-    def play_sound(self):
+    def play_beat_sound(self):
         """Play the metronome clicking sound."""
-        # With each call, play either the downbeat or backbeat sound depending
-        # on the current beat.
+        # With each call, play either the downbeat or backbeat sound depending on
+        # the current beat counter. After that, increase the counter accordingly.
+        # Also, take the volume settings into account.
+        print(f"Playing beat {self.current_beat+1} of {self.time_signature_numerator}")
         if self.current_beat == 0 and self.downbeat_accent:  # downbeat
             volume = self.downbeat_volume / 100 * self.preset_downbeat_volume / 100 * self.volume / 100
             self.player_downbeat.setVolume(volume)
@@ -333,6 +344,29 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             self.player_backbeat.setVolume(volume)
             self.player_backbeat.play()
         self.current_beat = (self.current_beat + 1) % self.time_signature_numerator
+
+
+    def play_sound_callback(self):
+        """Play the metronome clicking sound."""
+        # This function is called by a single-shot timer at each beat. The timer
+        # interval is set according to the tempo. To account for inaccuracies in
+        # the timer, scheduling etc., we use the system clock to determine the
+        # exact timing of each beat (thus errors do not accumulate).
+
+        if not self.playing:
+            return
+
+        self.play_beat_sound()
+
+        # Schedule the next call of this function according to the system time.
+        duration_between_beats_ns = 60_000_000_000 // self.tempo
+        self.next_beat_system_time_ns += duration_between_beats_ns
+        time_left_to_next_beat_ns = self.next_beat_system_time_ns - time.time() * 1_000_000_000
+        if time_left_to_next_beat_ns > 0:
+            QTimer.singleShot(time_left_to_next_beat_ns // 1_000_000, self.play_sound_callback)  # type: ignore
+        else:
+            # If we are already late, schedule the next beat immediately.
+            QTimer.singleShot(0, self.play_sound_callback)
 
 
     def save_config(self):
@@ -359,17 +393,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.tempo = tempo
         self.slider_tempo.setValue(tempo)
         self.config["general_settings"]["tempo"] = tempo
-
-        # Adjust the timer interval if the metronome is currently playing.
-        # Take into account the time left until the next beat.
-        if self.playing:
-            time_left = max(5, self.timer.remainingTime())
-            self.timer.stop()
-            def restart_timer():
-                self.play_sound()
-                interval = 60000 // tempo  # duration of a beat in milliseconds
-                self.timer.start(interval)
-            QTimer.singleShot(time_left, restart_timer)
 
 
     def set_volume(self, volume: int):
