@@ -17,9 +17,9 @@ from PySide6.QtGui import (QAction, QBrush, QColor, QConicalGradient,
     QPainter, QPalette, QPixmap, QRadialGradient,
     QTransform)
 from PySide6.QtWidgets import (QAbstractSpinBox, QApplication, QFrame, QGroupBox,
-    QHBoxLayout, QLabel, QMainWindow, QMenu,
-    QMenuBar, QPushButton, QSizePolicy, QSlider,
-    QSpacerItem, QSpinBox, QVBoxLayout, QWidget)
+    QHBoxLayout, QMainWindow, QMenu, QMenuBar,
+    QPushButton, QSizePolicy, QSlider, QSpacerItem,
+    QSpinBox, QVBoxLayout, QWidget)
 
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
@@ -424,10 +424,12 @@ class Ui_MainWindow(object):
 
         self.verticalLayout_volumeSlider.addWidget(self.slider_volume)
 
-        self.label = QLabel(self.centralwidget)
-        self.label.setObjectName(u"label")
+        self.pushButton_volumeSymbol = QPushButton(self.centralwidget)
+        self.pushButton_volumeSymbol.setObjectName(u"pushButton_volumeSymbol")
+        self.pushButton_volumeSymbol.setMaximumSize(QSize(16, 16))
+        self.pushButton_volumeSymbol.setFlat(True)
 
-        self.verticalLayout_volumeSlider.addWidget(self.label)
+        self.verticalLayout_volumeSlider.addWidget(self.pushButton_volumeSymbol)
 
 
         self.horizontalLayout_4.addLayout(self.verticalLayout_volumeSlider)
@@ -483,9 +485,6 @@ class Ui_MainWindow(object):
         self.action_Preferences.setShortcut(QCoreApplication.translate("MainWindow", u"Ctrl+P", None))
 #endif // QT_CONFIG(shortcut)
         self.action_ShowHidePresets.setText(QCoreApplication.translate("MainWindow", u"Show/Hide Presets", None))
-#if QT_CONFIG(shortcut)
-        self.action_ShowHidePresets.setShortcut(QCoreApplication.translate("MainWindow", u"P", None))
-#endif // QT_CONFIG(shortcut)
 #if QT_CONFIG(tooltip)
         self.pushButton_preset1.setToolTip(QCoreApplication.translate("MainWindow", u"Hold Long to Overwrite", None))
 #endif // QT_CONFIG(tooltip)
@@ -543,7 +542,7 @@ class Ui_MainWindow(object):
 #if QT_CONFIG(tooltip)
         self.slider_volume.setToolTip(QCoreApplication.translate("MainWindow", u"Volume", None))
 #endif // QT_CONFIG(tooltip)
-        self.label.setText(QCoreApplication.translate("MainWindow", u"\U0001f50a", None))
+        self.pushButton_volumeSymbol.setText(QCoreApplication.translate("MainWindow", u"\U0001f50a", None))
         self.menuHelp.setTitle(QCoreApplication.translate("MainWindow", u"&Help", None))
         self.menu_Application.setTitle(QCoreApplication.translate("MainWindow", u"&Application", None))
         self.menuSettings.setTitle(QCoreApplication.translate("MainWindow", u"Settings", None))

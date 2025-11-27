@@ -8,8 +8,8 @@
    version="1.1"
    id="svg1"
    inkscape:version="1.4.2 (f4327f4, 2025-05-13)"
-   sodipodi:docname="play-stop-symbol.svg"
-   inkscape:export-filename=".\play-stop-symbol.png"
+   sodipodi:docname="volume-symbol.svg"
+   inkscape:export-filename="volume-symbol.png"
    inkscape:export-xdpi="144.46249"
    inkscape:export-ydpi="144.46249"
    xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
@@ -20,7 +20,7 @@
    xmlns:cc="http://creativecommons.org/ns#"
    xmlns:dc="http://purl.org/dc/elements/1.1/">
   <title
-     id="title1">Play-stop symbol of the &quot;Simple Metronome&quot; application</title>
+     id="title1">Volume symbol of the &quot;Simple Metronome&quot; application</title>
   <sodipodi:namedview
      id="namedview1"
      pagecolor="#ffffff"
@@ -31,15 +31,16 @@
      inkscape:pagecheckerboard="0"
      inkscape:deskcolor="#d1d1d1"
      inkscape:document-units="mm"
-     inkscape:zoom="2.1908902"
-     inkscape:cx="80.104425"
-     inkscape:cy="197.86478"
-     inkscape:window-width="1916"
-     inkscape:window-height="2022"
-     inkscape:window-x="-10"
-     inkscape:window-y="0"
-     inkscape:window-maximized="0"
-     inkscape:current-layer="g5" />
+     inkscape:zoom="7.1892253"
+     inkscape:cx="120.94488"
+     inkscape:cy="120.94488"
+     inkscape:window-width="3840"
+     inkscape:window-height="2036"
+     inkscape:window-x="-12"
+     inkscape:window-y="-12"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="g11"
+     showguides="true" />
   <defs
      id="defs1" />
   <g
@@ -47,32 +48,29 @@
      inkscape:groupmode="layer"
      id="layer1">
     <g
-       id="g5"
-       transform="matrix(3.3220438,0,0,3.3220438,-231.35935,-620.29717)">
+       id="g11"
+       transform="matrix(6.0844162,0,0,6.0844162,-1201.7735,-1232.9528)"
+       style="stroke-width:0.999954;stroke-dasharray:none">
       <path
-         style="fill:#dddddd;stroke-width:0.37055502;stroke-linecap:round;stroke-dasharray:none;fill-opacity:1"
-         d="m 70.558463,192.30884 6.887575,3.63314 -6.887575,3.63313 z"
-         id="path1"
-         sodipodi:nodetypes="cccc" />
+         style="fill:#e9e6ef;fill-opacity:1;stroke:#e9e6ef;stroke-width:0.999954;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:none;stroke-opacity:1"
+         d="m 198.52018,206.1931 h 1.65596 l 2.07786,-1.28692 0.81371,-0.8687 v 3.04336 c 0.51013,0.52203 0.50369,1.26635 0,1.77831 v 2.90424 l -0.84336,-0.72511 -2.04821,-1.18253 h -1.65596 z"
+         id="path9"
+         sodipodi:nodetypes="ccccccccccc" />
       <path
-         style="fill:#dddddd;stroke-width:0.370417;stroke-linecap:round;fill-opacity:1"
-         d="m 77.53743,200.39951 3.035386,-7.86156 h 1.256529 l -3.035386,7.86156 z"
-         id="path2"
+         style="fill:none;fill-opacity:1;stroke:#0067c0;stroke-width:0.999954;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:none;stroke-opacity:1"
+         d="m 205.47888,205.49857 c 2.0665,1.53975 2.0746,3.29552 0,4.97747"
+         id="path10"
+         sodipodi:nodetypes="cc" />
+      <path
+         style="fill:none;fill-opacity:1;stroke:#0067c0;stroke-width:0.999954;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:none;stroke-opacity:1"
+         d="m 204.6055,206.78841 c 0.90607,0.73474 0.91369,1.62538 0,2.46393"
+         id="path11"
+         sodipodi:nodetypes="cc" />
+      <path
+         style="fill:#ccc9ce;fill-opacity:1;stroke:#ccc9ce;stroke-width:0.999954;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:none;stroke-opacity:1"
+         d="m 198.52018,206.1931 h 1.35194 v 3.66265 h -1.35194 z"
+         id="path12"
          sodipodi:nodetypes="ccccc" />
-      <g
-         id="g4"
-         style="fill:#dddddd;fill-opacity:1">
-        <path
-           style="fill:#dddddd;stroke-width:0.370417;stroke-linecap:round;fill-opacity:1"
-           d="m 84.181891,193.63997 h 1.425591 v 5.9106 h -1.425591 z"
-           id="path3"
-           sodipodi:nodetypes="ccccc" />
-        <path
-           style="fill:#dddddd;stroke-width:0.370417;stroke-linecap:round;fill-opacity:1"
-           d="m 86.568553,193.63997 h 1.425591 v 5.9106 h -1.425591 z"
-           id="path4"
-           sodipodi:nodetypes="ccccc" />
-      </g>
     </g>
   </g>
   <metadata
@@ -88,8 +86,8 @@
             <dc:title>Christoph Hänisch</dc:title>
           </cc:Agent>
         </dc:creator>
-        <dc:title>Play-stop symbol of the &quot;Simple Metronome&quot; application</dc:title>
-        <dc:description>Play-stop symbol of the &quot;Simple Metronome&quot; application</dc:description>
+        <dc:title>Volume symbol of the &quot;Simple Metronome&quot; application</dc:title>
+        <dc:description>Volume symbol of the &quot;Simple Metronome&quot; application</dc:description>
       </cc:Work>
       <cc:License
          rdf:about="http://scripts.sil.org/OFL">

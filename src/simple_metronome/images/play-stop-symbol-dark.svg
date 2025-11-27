@@ -9,7 +9,7 @@
    id="svg1"
    inkscape:version="1.4.2 (f4327f4, 2025-05-13)"
    sodipodi:docname="play-stop-symbol.svg"
-   inkscape:export-filename=".\play-stop-symbol.png"
+   inkscape:export-filename="./play-stop-symbol.png"
    inkscape:export-xdpi="144.46249"
    inkscape:export-ydpi="144.46249"
    xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
@@ -31,15 +31,15 @@
      inkscape:pagecheckerboard="0"
      inkscape:deskcolor="#d1d1d1"
      inkscape:document-units="mm"
-     inkscape:zoom="2.1908902"
-     inkscape:cx="80.104425"
-     inkscape:cy="197.86478"
-     inkscape:window-width="1916"
-     inkscape:window-height="2022"
-     inkscape:window-x="-10"
-     inkscape:window-y="0"
-     inkscape:window-maximized="0"
-     inkscape:current-layer="g5" />
+     inkscape:zoom="4.3817804"
+     inkscape:cx="91.401203"
+     inkscape:cy="142.97841"
+     inkscape:window-width="3840"
+     inkscape:window-height="2036"
+     inkscape:window-x="-12"
+     inkscape:window-y="-12"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="layer1" />
   <defs
      id="defs1" />
   <g
@@ -50,25 +50,24 @@
        id="g5"
        transform="matrix(3.3220438,0,0,3.3220438,-231.35935,-620.29717)">
       <path
-         style="fill:#dddddd;stroke-width:0.37055502;stroke-linecap:round;stroke-dasharray:none;fill-opacity:1"
+         style="fill:#231f20;stroke-width:0.370417;stroke-linecap:round"
          d="m 70.558463,192.30884 6.887575,3.63314 -6.887575,3.63313 z"
          id="path1"
          sodipodi:nodetypes="cccc" />
       <path
-         style="fill:#dddddd;stroke-width:0.370417;stroke-linecap:round;fill-opacity:1"
+         style="fill:#231f20;stroke-width:0.370417;stroke-linecap:round"
          d="m 77.53743,200.39951 3.035386,-7.86156 h 1.256529 l -3.035386,7.86156 z"
          id="path2"
          sodipodi:nodetypes="ccccc" />
       <g
-         id="g4"
-         style="fill:#dddddd;fill-opacity:1">
+         id="g4">
         <path
-           style="fill:#dddddd;stroke-width:0.370417;stroke-linecap:round;fill-opacity:1"
+           style="fill:#231f20;stroke-width:0.370417;stroke-linecap:round"
            d="m 84.181891,193.63997 h 1.425591 v 5.9106 h -1.425591 z"
            id="path3"
            sodipodi:nodetypes="ccccc" />
         <path
-           style="fill:#dddddd;stroke-width:0.370417;stroke-linecap:round;fill-opacity:1"
+           style="fill:#231f20;stroke-width:0.370417;stroke-linecap:round"
            d="m 86.568553,193.63997 h 1.425591 v 5.9106 h -1.425591 z"
            id="path4"
            sodipodi:nodetypes="ccccc" />

@@ -1003,9 +1003,18 @@
        </widget>
       </item>
       <item>
-       <widget class="QLabel" name="label">
+       <widget class="QPushButton" name="pushButton_volumeSymbol">
+        <property name="maximumSize">
+         <size>
+          <width>16</width>
+          <height>16</height>
+         </size>
+        </property>
         <property name="text">
          <string>🔊</string>
+        </property>
+        <property name="flat">
+         <bool>true</bool>
         </property>
        </widget>
       </item>
@@ -1089,9 +1098,6 @@
   <action name="action_ShowHidePresets">
    <property name="text">
     <string>Show/Hide Presets</string>
-   </property>
-   <property name="shortcut">
-    <string>P</string>
    </property>
   </action>
  </widget>

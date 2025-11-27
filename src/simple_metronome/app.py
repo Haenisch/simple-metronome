@@ -11,10 +11,11 @@ def main():
     """Main function."""
     os.environ["QT_SCALE_FACTOR"] = "1.25"
     app = QApplication(sys.argv)
+    app.setStyle("Windows11")
     with open("style.qss", "r", encoding="utf-8") as file:
         app.setStyleSheet(file.read())
     window = MainWindow()
-    icon = QIcon("images/metronome-icon.png")  # Use your icon file path here
+    icon = QIcon("images/metronome-icon.png")
     window.setWindowIcon(icon)
     window.show()
     app.exec()

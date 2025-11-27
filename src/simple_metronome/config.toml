@@ -2,10 +2,10 @@
 backbeat_volume = 80
 downbeat_volume = 100
 downbeat_accent = true
-time_signature_numerator = 4
-time_signature_denominator = 4
-tempo = 150
-volume = 67
+time_signature_numerator = 7
+time_signature_denominator = 9
+tempo = 125
+volume = 125
 
 [preset1]
 backbeat_sound_file = "./sounds/low click - backbeat.wav"

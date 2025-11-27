@@ -37,6 +37,10 @@ QPushButton#pushButton_increaseTempo {
     border-radius: 8px;
 }
 
+QPushButton#pushButton_volumeSymbol {
+    background-color: #2b2b2b;
+}
+
 
 /* Labels */
 QLabel {

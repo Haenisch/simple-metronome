@@ -8,8 +8,8 @@
    version="1.1"
    id="svg1"
    inkscape:version="1.4.2 (f4327f4, 2025-05-13)"
-   sodipodi:docname="play-stop-symbol.svg"
-   inkscape:export-filename=".\play-stop-symbol.png"
+   sodipodi:docname="note-accent-symbol.svg"
+   inkscape:export-filename="./note-accent-symbol.png"
    inkscape:export-xdpi="144.46249"
    inkscape:export-ydpi="144.46249"
    xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
@@ -20,7 +20,7 @@
    xmlns:cc="http://creativecommons.org/ns#"
    xmlns:dc="http://purl.org/dc/elements/1.1/">
   <title
-     id="title1">Play-stop symbol of the &quot;Simple Metronome&quot; application</title>
+     id="title1">Note with accent symbol of the &quot;Simple Metronome&quot; application</title>
   <sodipodi:namedview
      id="namedview1"
      pagecolor="#ffffff"
@@ -31,15 +31,15 @@
      inkscape:pagecheckerboard="0"
      inkscape:deskcolor="#d1d1d1"
      inkscape:document-units="mm"
-     inkscape:zoom="2.1908902"
-     inkscape:cx="80.104425"
-     inkscape:cy="197.86478"
+     inkscape:zoom="4.2374674"
+     inkscape:cx="120.94488"
+     inkscape:cy="120.94488"
      inkscape:window-width="1916"
      inkscape:window-height="2022"
-     inkscape:window-x="-10"
+     inkscape:window-x="0"
      inkscape:window-y="0"
      inkscape:window-maximized="0"
-     inkscape:current-layer="g5" />
+     inkscape:current-layer="layer1" />
   <defs
      id="defs1" />
   <g
@@ -47,32 +47,19 @@
      inkscape:groupmode="layer"
      id="layer1">
     <g
-       id="g5"
-       transform="matrix(3.3220438,0,0,3.3220438,-231.35935,-620.29717)">
+       id="g6"
+       transform="matrix(2.3982417,0,0,2.3982417,-337.52399,-417.1186)"
+       style="fill:#dddddd;fill-opacity:1">
       <path
-         style="fill:#dddddd;stroke-width:0.37055502;stroke-linecap:round;stroke-dasharray:none;fill-opacity:1"
-         d="m 70.558463,192.30884 6.887575,3.63314 -6.887575,3.63313 z"
-         id="path1"
-         sodipodi:nodetypes="cccc" />
+         style="fill:#dddddd;fill-opacity:1;stroke-width:0.370417;stroke-linecap:round"
+         d="m 149.69459,193.95613 4.41455,2.38865 v 0.46473 l -4.41455,2.28642 v -1.16812 l 2.82025,-1.43278 -2.82025,-1.43278 z"
+         id="path5"
+         sodipodi:nodetypes="cccccccc" />
       <path
-         style="fill:#dddddd;stroke-width:0.370417;stroke-linecap:round;fill-opacity:1"
-         d="m 77.53743,200.39951 3.035386,-7.86156 h 1.256529 l -3.035386,7.86156 z"
-         id="path2"
-         sodipodi:nodetypes="ccccc" />
-      <g
-         id="g4"
-         style="fill:#dddddd;fill-opacity:1">
-        <path
-           style="fill:#dddddd;stroke-width:0.370417;stroke-linecap:round;fill-opacity:1"
-           d="m 84.181891,193.63997 h 1.425591 v 5.9106 h -1.425591 z"
-           id="path3"
-           sodipodi:nodetypes="ccccc" />
-        <path
-           style="fill:#dddddd;stroke-width:0.370417;stroke-linecap:round;fill-opacity:1"
-           d="m 86.568553,193.63997 h 1.425591 v 5.9106 h -1.425591 z"
-           id="path4"
-           sodipodi:nodetypes="ccccc" />
-      </g>
+         style="fill:#dddddd;fill-opacity:1;stroke-width:0.0615672;stroke-linecap:round"
+         d="m 153.74685,175.51515 v 11.74173 c -1.11602,-0.72973 -3.25235,-0.94748 -4.57356,0.36281 -1.32122,1.31029 -0.91118,3.38863 0.0329,4.18877 0.94416,0.80015 3.51723,0.60268 4.54057,-0.20889 1.02335,-0.81156 1.29742,-2.31179 1.18737,-4.34269 v -8.9822 c 2.15482,-0.009 3.69112,0.67313 3.62807,3.14432 h 1.19835 c 0.46431,-4.28077 -1.37788,-6.40086 -6.01379,-5.90385 z"
+         id="path6"
+         sodipodi:nodetypes="cczzzccccc" />
     </g>
   </g>
   <metadata
@@ -88,8 +75,8 @@
             <dc:title>Christoph Hänisch</dc:title>
           </cc:Agent>
         </dc:creator>
-        <dc:title>Play-stop symbol of the &quot;Simple Metronome&quot; application</dc:title>
-        <dc:description>Play-stop symbol of the &quot;Simple Metronome&quot; application</dc:description>
+        <dc:title>Note with accent symbol of the &quot;Simple Metronome&quot; application</dc:title>
+        <dc:description>Note with accent  symbol of the &quot;Simple Metronome&quot; application</dc:description>
       </cc:Work>
       <cc:License
          rdf:about="http://scripts.sil.org/OFL">

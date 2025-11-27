@@ -20,8 +20,8 @@
 from enum import Enum
 import time
 
-from PySide6.QtCore import Qt, QTimer, QUrl
-from PySide6.QtGui import QKeySequence, QShortcut
+from PySide6.QtCore import Qt, QSize, QTimer, QUrl
+from PySide6.QtGui import QIcon, QKeySequence, QPixmap, QShortcut
 from PySide6.QtMultimedia import QSoundEffect
 from PySide6.QtWidgets import QMainWindow, QMessageBox
 import toml
@@ -149,6 +149,20 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.action_Preferences.triggered.connect(self.show_settings_dialog)
         self.action_Quit.triggered.connect(self.close)
         self.action_ShowHidePresets.triggered.connect(self.on_toggle_presets_visibility)
+
+        # Exchange the unicode text in some buttons with icons.
+        icon_play_stop = QIcon("images/play-stop-symbol.png")
+        self.pushButton_playStop.setIcon(icon_play_stop)
+        self.pushButton_playStop.setIconSize(self.pushButton_playStop.size() * 0.8)
+        self.pushButton_playStop.setText("")
+        icon_note_accent = QIcon("images/note-accent-symbol.png")
+        self.pushButton_downbeatAccent.setIcon(icon_note_accent)
+        self.pushButton_downbeatAccent.setIconSize(self.pushButton_downbeatAccent.size() * 0.8)
+        self.pushButton_downbeatAccent.setText("")
+        icon_volume_symbol = QPixmap("images/volume-symbol.svg")
+        self.pushButton_volumeSymbol.setIcon(QIcon(icon_volume_symbol))
+        self.pushButton_volumeSymbol.setIconSize(QSize(16, 16))
+        self.pushButton_volumeSymbol.setText("")
 
         # Add global shortcuts.
         self.shortcut_about = QShortcut(QKeySequence("F1"), self)
