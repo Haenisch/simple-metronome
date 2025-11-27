@@ -17,6 +17,7 @@
 #   pyside6-uic .\main_window.ui -o ui_main_window.py
 #   poetry run pyside6-uic .\main_window.ui -o ui_main_window.py
 
+from enum import Enum
 import time
 
 from PySide6.QtCore import Qt, QTimer, QUrl
@@ -64,6 +65,20 @@ class MainWindow(QMainWindow, Ui_MainWindow):
     Since this application is simple enough, the main window also contains the main logic.
     """
 
+    MAX_TEMPO = 260
+    MIN_TEMPO = 20
+    MAX_VOLUME = 100
+    MIN_VOLUME = 0
+    MAX_TAP_TIMES = 5  # maximum number of tap times to consider for tempo calculation
+    TAP_TIMEOUT_MS = 5000  # timeout in milliseconds to end tap tempo mode
+
+    class TapState(Enum):
+        """State of the tap tempo functionality."""
+        WAITING_FOR_FIRST_TAP = 1  # store current time, change button color, ...
+        COLLECTING_TAPS = 2        # collect tap times, calculate tempo, ...
+        ENDING_TAP_SEQUENCE = 3    # timeout reached; change button color, reset state, ...
+
+
     def __init__(self):
         """Initialize the main widget."""
         super().__init__()
@@ -72,9 +87,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.menubar.hide()
         self.init_geometry()
 
-        self.timer = QTimer()
-        self.timer.setTimerType(Qt.PreciseTimer)  # type: ignore
-        self.timer.timeout.connect(self.play_sound_callback)
         self.player_downbeat = QSoundEffect()
         self.player_downbeat.setLoopCount(1)
         self.player_backbeat = QSoundEffect()
@@ -82,6 +94,15 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.playing = False
         self.current_beat = 0
         self.next_beat_system_time_ns = 0  # system time for the next beat in nanoseconds
+
+        self.tap_state = MainWindow.TapState.WAITING_FOR_FIRST_TAP
+        self.tap_times_ns = []  # list of system times at taps in nanoseconds
+        self.tap_timer = QTimer()
+        self.tap_timer.setSingleShot(True)
+        self.tap_timer.setTimerType(Qt.PreciseTimer)  # type: ignore
+        self.tap_timer.timeout.connect(self.on_tap_tempo_timeout)
+
+        self.presets_are_visible = True
 
         # Load the configuration.
         self.config = {}
@@ -127,6 +148,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.action_About.triggered.connect(lambda: QMessageBox.information(self, "About", f"A Simple Metronome\nVersion {VERSION}\n(c) 2025 Christoph Hänisch"))
         self.action_Preferences.triggered.connect(self.show_settings_dialog)
         self.action_Quit.triggered.connect(self.close)
+        self.action_ShowHidePresets.triggered.connect(self.on_toggle_presets_visibility)
 
         # Add global shortcuts.
         self.shortcut_about = QShortcut(QKeySequence("F1"), self)
@@ -162,6 +184,9 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.shortcut_load_preset_1.activated.connect(lambda:self.load_preset(4))
         self.shortcut_load_preset_1 = QShortcut(QKeySequence("5"), self)
         self.shortcut_load_preset_1.activated.connect(lambda:self.load_preset(5))
+
+        self.shortcut_show_hide_presets = QShortcut(QKeySequence("P"), self)
+        self.shortcut_show_hide_presets.activated.connect(self.on_toggle_presets_visibility)
 
         # Set up the preferences dialog.
         self.setup_dialogs()
@@ -262,7 +287,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             # TODO: visual beat indication
         else:
             self.playing = False
-            self.timer.stop()
 
 
     def on_preset1_clicked(self):
@@ -291,7 +315,53 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
     def on_tap_tempo_clicked(self):
         """Handle clicks on the 'Tap Tempo' button."""
-        pass
+        # Clicking the tap tempo button multiple times sets the tempo according
+        # to the average interval between the last few clicks. With the first
+        # click, the button color changes to indicate that the application is in
+        # tap tempo mode. If no further taps occur within a timeout period, the
+        # mode ends. The logic is implemented using a simple state machine.
+        # See MainWindow.TappingState for the states.
+
+        # Note, there is the unlikely possibility of a race condition here if
+        # the timeout occurs exactly when the button is clicked again. In that
+        # case, the timeout handler and the click handler could both try to
+        # change the state and button color simultaneously. However, since this
+        # is a simple application, we ignore this possibility for the sake of
+        # simplicity.
+
+        if self.tap_state == MainWindow.TapState.WAITING_FOR_FIRST_TAP:
+            # First tap: store the current time and change the button color.
+            self.tap_times_ns = [time.time_ns()]
+            self.pushButton_tapTempo.setStyleSheet("background-color: ""#0067C0")  # blue
+            self.tap_state = MainWindow.TapState.COLLECTING_TAPS
+            # Start a single-shot timer to end the tap sequence after a timeout.
+            self.tap_timer.start(self.TAP_TIMEOUT_MS)
+        elif self.tap_state == MainWindow.TapState.COLLECTING_TAPS:
+            # Subsequent taps: store the current time and calculate the tempo.
+            current_time_ns = time.time_ns()
+            self.tap_times_ns.append(current_time_ns)
+            if len(self.tap_times_ns) > MainWindow.MAX_TAP_TIMES:
+                self.tap_times_ns.pop(0)  # remove the oldest tap time
+            # Calculate the average interval between taps.
+            intervals_ns = [t2 - t1 for t1, t2 in zip(self.tap_times_ns[:-1], self.tap_times_ns[1:])]
+            average_interval_ns = sum(intervals_ns) // len(intervals_ns)
+            # Calculate the tempo in BPM.
+            if average_interval_ns > 0:
+                tempo = 60_000_000_000 // average_interval_ns
+                tempo = max(MainWindow.MIN_TEMPO, min(MainWindow.MAX_TEMPO, tempo))
+                self.set_tempo(tempo)
+            # Restart the single-shot timer to end the tap sequence after a timeout.
+            self.tap_timer.start(self.TAP_TIMEOUT_MS)
+        elif self.tap_state == MainWindow.TapState.ENDING_TAP_SEQUENCE:
+            # Restore color of the button and reset the state.
+            self.pushButton_tapTempo.setStyleSheet("")
+            self.tap_state = MainWindow.TapState.WAITING_FOR_FIRST_TAP
+
+
+    def on_tap_tempo_timeout(self):
+        """Handle the end of the tap tempo sequence due to timeout."""
+        self.tap_state = MainWindow.TapState.ENDING_TAP_SEQUENCE
+        self.on_tap_tempo_clicked()
 
 
     def on_time_signature_2_4_clicked(self):
@@ -324,6 +394,20 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.set_time_signature(self.time_signature_numerator, value)
 
 
+    def on_toggle_presets_visibility(self):
+        """Toggle the visibility of the preset buttons."""
+        if self.presets_are_visible:
+            self.groupBox_presets.hide()
+            self.presets_are_visible = False
+            self.adjustSize()  # Let layout calculate
+            QTimer.singleShot(0, lambda: self.resize(321, 268))  # Override after
+        else:
+            self.groupBox_presets.show()
+            self.presets_are_visible = True
+            self.adjustSize()
+            QTimer.singleShot(0, lambda: self.resize(470, 268))
+
+
     def on_volume_changed(self, value: int):
         """Handle changes of the volume slider."""
         self.set_volume(value)
@@ -334,7 +418,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         # With each call, play either the downbeat or backbeat sound depending on
         # the current beat counter. After that, increase the counter accordingly.
         # Also, take the volume settings into account.
-        print(f"Playing beat {self.current_beat+1} of {self.time_signature_numerator}")
         if self.current_beat == 0 and self.downbeat_accent:  # downbeat
             volume = self.downbeat_volume / 100 * self.preset_downbeat_volume / 100 * self.volume / 100
             self.player_downbeat.setVolume(volume)

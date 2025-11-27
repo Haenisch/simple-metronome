@@ -14,7 +14,7 @@ def main():
     with open("style.qss", "r", encoding="utf-8") as file:
         app.setStyleSheet(file.read())
     window = MainWindow()
-    icon = QIcon("images/icon.png")  # Use your icon file path here
+    icon = QIcon("images/metronome-icon.png")  # Use your icon file path here
     window.setWindowIcon(icon)
     window.show()
     app.exec()
