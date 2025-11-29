@@ -18,10 +18,11 @@
 #   poetry run pyside6-uic .\main_window.ui -o ui_main_window.py
 
 from enum import Enum
+import os
 import time
 
-from PySide6.QtCore import Qt, QSize, QTimer, QUrl
-from PySide6.QtGui import QIcon, QKeySequence, QPixmap, QShortcut
+from PySide6.QtCore import QPoint, Qt, QSize, QTimer, QUrl
+from PySide6.QtGui import QIcon, QKeySequence, QMouseEvent, QPixmap, QShortcut
 from PySide6.QtMultimedia import QSoundEffect
 from PySide6.QtWidgets import QMainWindow, QMessageBox
 import toml
@@ -79,13 +80,15 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         ENDING_TAP_SEQUENCE = 3    # timeout reached; change button color, reset state, ...
 
 
-    def __init__(self):
+    def __init__(self, application_directory: str = ""):
         """Initialize the main widget."""
         super().__init__()
+        self._drag_position = QPoint()
         self.setupUi(self)
         self.setWindowTitle("Simple Metronome")
         self.menubar.hide()
         self.init_geometry()
+        self.slider_volume.setFocus()
 
         self.player_downbeat = QSoundEffect()
         self.player_downbeat.setLoopCount(1)
@@ -102,7 +105,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.tap_timer.setTimerType(Qt.PreciseTimer)  # type: ignore
         self.tap_timer.timeout.connect(self.on_tap_tempo_timeout)
 
-        self.presets_are_visible = True
+        self.view_mode_expanded = True
 
         # Load the configuration.
         self.config = {}
@@ -148,7 +151,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.action_About.triggered.connect(lambda: QMessageBox.information(self, "About", f"A Simple Metronome\nVersion {VERSION}\n(c) 2025 Christoph Hänisch"))
         self.action_Preferences.triggered.connect(self.show_settings_dialog)
         self.action_Quit.triggered.connect(self.close)
-        self.action_ShowHidePresets.triggered.connect(self.on_toggle_presets_visibility)
+        self.action_ToggleViewMode.triggered.connect(self.on_toggle_view_mode)
 
         # Exchange the unicode text in some buttons with icons.
         icon_play_stop = QIcon("images/play-stop-symbol.png")
@@ -174,6 +177,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
         self.shortcut_start_stop = QShortcut(QKeySequence("Space"), self)
         self.shortcut_start_stop.activated.connect(self.on_play_stop_clicked)
+        # self.shortcut_tap = QShortcut(QKeySequence("T"), self)
+        # self.shortcut_tap.activated.connect(self.on_tap_tempo_clicked)
         self.shortcut_toggle_downbeat_accent = QShortcut(QKeySequence("<"), self)
         self.shortcut_toggle_downbeat_accent.activated.connect(self.toggle_downbeat_accent)
         self.shortcut_toggle_downbeat_accent = QShortcut(QKeySequence("a"), self)
@@ -199,8 +204,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.shortcut_load_preset_1 = QShortcut(QKeySequence("5"), self)
         self.shortcut_load_preset_1.activated.connect(lambda:self.load_preset(5))
 
-        self.shortcut_show_hide_presets = QShortcut(QKeySequence("P"), self)
-        self.shortcut_show_hide_presets.activated.connect(self.on_toggle_presets_visibility)
+        self.shortcut_toggle_view_mode = QShortcut(QKeySequence("M"), self)
+        self.shortcut_toggle_view_mode.activated.connect(self.on_toggle_view_mode)
 
         # Set up the preferences dialog.
         self.setup_dialogs()
@@ -236,12 +241,12 @@ class MainWindow(QMainWindow, Ui_MainWindow):
     def load_config(self):
         """Load the configuration from a TOML file."""
         try:
-            self.config = toml.load("./config.toml")
+            self.config = toml.load("config.toml")
         except FileNotFoundError:
-            QMessageBox.warning(self, "Warning", "Configuration file './config.toml' not found. Using default settings.")
+            QMessageBox.warning(self, "Warning", "Configuration file 'config.toml' not found. Using default settings.")
             self.config = default_config.config
         except toml.TomlDecodeError as e:
-            QMessageBox.critical(self, "Error", f"Failed to parse configuration file './config.toml': {e}")
+            QMessageBox.critical(self, "Error", f"Failed to parse configuration file 'config.toml': {e}")
 
         # Check if all required tables along with key-value pairs are present; if not, use defaults.
         anything_missing = False
@@ -283,6 +288,18 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.set_time_signature(numerator, denominator)
         self.set_tempo(int(preset["tempo"]))
         self.set_volume(int(preset["volume"]))
+
+
+    def mousePressEvent(self, event: QMouseEvent) -> None:
+        if event.button() == Qt.LeftButton:  # type: ignore
+            self._drag_position = event.globalPosition().toPoint() - self.frameGeometry().topLeft()
+            event.accept()
+
+
+    def mouseMoveEvent(self, event: QMouseEvent) -> None:
+        if event.buttons() & Qt.LeftButton:  # type: ignore
+            self.move(event.globalPosition().toPoint() - self._drag_position)
+            event.accept()
 
 
     def on_play_stop_clicked(self):
@@ -346,7 +363,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         if self.tap_state == MainWindow.TapState.WAITING_FOR_FIRST_TAP:
             # First tap: store the current time and change the button color.
             self.tap_times_ns = [time.time_ns()]
-            self.pushButton_tapTempo.setStyleSheet("background-color: ""#0067C0")  # blue
+            self.pushButton_tapTempo.setStyleSheet("background-color: "+"#0067C0")  # blue
             self.tap_state = MainWindow.TapState.COLLECTING_TAPS
             # Start a single-shot timer to end the tap sequence after a timeout.
             self.tap_timer.start(self.TAP_TIMEOUT_MS)
@@ -408,18 +425,30 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.set_time_signature(self.time_signature_numerator, value)
 
 
-    def on_toggle_presets_visibility(self):
-        """Toggle the visibility of the preset buttons."""
-        if self.presets_are_visible:
+    def on_toggle_view_mode(self):
+        """Toggle the visibility of the preset and time signature buttons."""
+        if self.view_mode_expanded:
+            # switch to compact view
+            self.view_mode_expanded = False
+            self.setWindowFlags(Qt.FramelessWindowHint)
             self.groupBox_presets.hide()
-            self.presets_are_visible = False
-            self.adjustSize()  # Let layout calculate
-            QTimer.singleShot(0, lambda: self.resize(321, 268))  # Override after
+            self.groupBox_timeSignaturePresets.hide()
+            self.slider_volume.setFocus()
+            self.adjustSize()  # Let layout re-calculate size...
+            self.resize(371, 210)
+            self.show()
+            QTimer.singleShot(0, lambda: self.resize(371, 210))  # ... and override it afterwards.
         else:
+            # switch to expanded view
+            self.view_mode_expanded = True
+            self.setWindowFlags(Qt.Window)
             self.groupBox_presets.show()
-            self.presets_are_visible = True
+            self.groupBox_timeSignaturePresets.show()
+            self.slider_volume.setFocus()
             self.adjustSize()
-            QTimer.singleShot(0, lambda: self.resize(470, 268))
+            self.resize(478, 268)
+            self.show()
+            QTimer.singleShot(0, lambda: self.resize(478, 268))
 
 
     def on_volume_changed(self, value: int):

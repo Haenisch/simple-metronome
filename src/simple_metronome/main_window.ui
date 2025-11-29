@@ -860,6 +860,9 @@
            <property name="text">
             <string>▶/⏸</string>
            </property>
+           <property name="shortcut">
+            <string>Space</string>
+           </property>
           </widget>
          </item>
          <item>
@@ -904,6 +907,9 @@
            <property name="text">
             <string>TAP</string>
            </property>
+           <property name="shortcut">
+            <string>T</string>
+           </property>
           </widget>
          </item>
          <item>
@@ -947,6 +953,9 @@
            </property>
            <property name="text">
             <string>&gt;</string>
+           </property>
+           <property name="shortcut">
+            <string>&lt;</string>
            </property>
           </widget>
          </item>
@@ -1065,7 +1074,7 @@
     </property>
     <addaction name="separator"/>
     <addaction name="action_Preferences"/>
-    <addaction name="action_ShowHidePresets"/>
+    <addaction name="action_ToggleViewMode"/>
    </widget>
    <addaction name="menu_Application"/>
    <addaction name="menuSettings"/>
@@ -1095,9 +1104,9 @@
     <string>Ctrl+P</string>
    </property>
   </action>
-  <action name="action_ShowHidePresets">
+  <action name="action_ToggleViewMode">
    <property name="text">
-    <string>Show/Hide Presets</string>
+    <string>Compact Mode</string>
    </property>
   </action>
  </widget>
