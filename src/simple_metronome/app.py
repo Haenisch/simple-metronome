@@ -1,4 +1,31 @@
-"""A simple PySide6-based metronome application."""
+# Copyright (c) 2025 Christoph Hänisch.
+# This file is part of the "Metronome" application.
+# It is licensed under the GNU General Public License v3.0 or higher.
+# See the LICENSE file for more details.
+
+"""A simple metronome application."""
+
+# Note, the application is based on files created with the Qt Designer. These
+# files have to be compiled to Python using pyside6-uic and pyside6-rcc,
+# respectively. The generated Python files are then imported here.
+#
+# These files are:
+#
+#     main_window.ui      →  ui_main_window.py
+#     settings_dialog.ui  →  ui_settings_dialog.py
+#     resource_files.qrc  →  resource_files_rc.py
+#
+# The commands to do this are:
+#
+#     pyside6-uic main_window.ui -o ui_main_window.py
+#     pyside6-uic settings_dialog.ui -o ui_settings_dialog.py
+#     pyside6-rcc resource_files.qrc -o resource_files_rc.py
+#
+# If you are using Poetry, you can run these commands as follows:
+#
+#     poetry run pyside6-uic main_window.ui -o ui_main_window.py
+#     poetry run pyside6-uic settings_dialog.qrc -o ui_settings_dialog.py
+#     poetry run pyside6-rcc resource_files.qrc -o resource_files_rc.py
 
 import os
 import sys

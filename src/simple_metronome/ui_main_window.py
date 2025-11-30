@@ -16,16 +16,17 @@ from PySide6.QtGui import (QAction, QBrush, QColor, QConicalGradient,
     QIcon, QImage, QKeySequence, QLinearGradient,
     QPainter, QPalette, QPixmap, QRadialGradient,
     QTransform)
-from PySide6.QtWidgets import (QAbstractSpinBox, QApplication, QFrame, QGroupBox,
-    QHBoxLayout, QMainWindow, QMenu, QMenuBar,
-    QPushButton, QSizePolicy, QSlider, QSpacerItem,
-    QSpinBox, QVBoxLayout, QWidget)
+from PySide6.QtWidgets import (QAbstractSpinBox, QApplication, QFrame, QGridLayout,
+    QGroupBox, QHBoxLayout, QMainWindow, QMenu,
+    QMenuBar, QPushButton, QSizePolicy, QSlider,
+    QSpacerItem, QSpinBox, QVBoxLayout, QWidget)
+import resource_files_rc
 
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
         if not MainWindow.objectName():
             MainWindow.setObjectName(u"MainWindow")
-        MainWindow.resize(505, 314)
+        MainWindow.resize(490, 312)
         self.action_About = QAction(MainWindow)
         self.action_About.setObjectName(u"action_About")
         self.action_Quit = QAction(MainWindow)
@@ -34,14 +35,51 @@ class Ui_MainWindow(object):
         self.action_Preferences.setObjectName(u"action_Preferences")
         self.action_ToggleViewMode = QAction(MainWindow)
         self.action_ToggleViewMode.setObjectName(u"action_ToggleViewMode")
+        self.action_OpenDownbeatSoundFile = QAction(MainWindow)
+        self.action_OpenDownbeatSoundFile.setObjectName(u"action_OpenDownbeatSoundFile")
+        self.action_OpenBackbeatSoundFile = QAction(MainWindow)
+        self.action_OpenBackbeatSoundFile.setObjectName(u"action_OpenBackbeatSoundFile")
         self.centralwidget = QWidget(MainWindow)
         self.centralwidget.setObjectName(u"centralwidget")
-        self.horizontalLayout_4 = QHBoxLayout(self.centralwidget)
-        self.horizontalLayout_4.setObjectName(u"horizontalLayout_4")
+        self.gridLayout = QGridLayout(self.centralwidget)
+        self.gridLayout.setObjectName(u"gridLayout")
         self.groupBox_presets = QGroupBox(self.centralwidget)
         self.groupBox_presets.setObjectName(u"groupBox_presets")
         self.verticalLayout = QVBoxLayout(self.groupBox_presets)
         self.verticalLayout.setObjectName(u"verticalLayout")
+        self.horizontalLayout = QHBoxLayout()
+        self.horizontalLayout.setObjectName(u"horizontalLayout")
+        self.pushButton_openDownbeatSoundFile = QPushButton(self.groupBox_presets)
+        self.pushButton_openDownbeatSoundFile.setObjectName(u"pushButton_openDownbeatSoundFile")
+        self.pushButton_openDownbeatSoundFile.setMinimumSize(QSize(0, 32))
+        self.pushButton_openDownbeatSoundFile.setMaximumSize(QSize(32, 48))
+        self.pushButton_openDownbeatSoundFile.setFocusPolicy(Qt.FocusPolicy.NoFocus)
+        icon = QIcon()
+        icon.addFile(u":/images/images/open-downbeat-sound-file-symbol.svg", QSize(), QIcon.Mode.Normal, QIcon.State.Off)
+        self.pushButton_openDownbeatSoundFile.setIcon(icon)
+        self.pushButton_openDownbeatSoundFile.setIconSize(QSize(24, 24))
+
+        self.horizontalLayout.addWidget(self.pushButton_openDownbeatSoundFile)
+
+        self.pushButton_openBackbeatSoundFile = QPushButton(self.groupBox_presets)
+        self.pushButton_openBackbeatSoundFile.setObjectName(u"pushButton_openBackbeatSoundFile")
+        self.pushButton_openBackbeatSoundFile.setMinimumSize(QSize(0, 32))
+        self.pushButton_openBackbeatSoundFile.setMaximumSize(QSize(32, 48))
+        self.pushButton_openBackbeatSoundFile.setFocusPolicy(Qt.FocusPolicy.NoFocus)
+        icon1 = QIcon()
+        icon1.addFile(u":/images/images/open-backbeat-sound-file-symbol.svg", QSize(), QIcon.Mode.Normal, QIcon.State.Off)
+        self.pushButton_openBackbeatSoundFile.setIcon(icon1)
+        self.pushButton_openBackbeatSoundFile.setIconSize(QSize(24, 24))
+
+        self.horizontalLayout.addWidget(self.pushButton_openBackbeatSoundFile)
+
+
+        self.verticalLayout.addLayout(self.horizontalLayout)
+
+        self.verticalSpacer_6 = QSpacerItem(20, 6, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Fixed)
+
+        self.verticalLayout.addItem(self.verticalSpacer_6)
+
         self.pushButton_preset1 = QPushButton(self.groupBox_presets)
         self.pushButton_preset1.setObjectName(u"pushButton_preset1")
         sizePolicy = QSizePolicy(QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Minimum)
@@ -54,6 +92,7 @@ class Ui_MainWindow(object):
         font.setPointSize(12)
         font.setBold(False)
         self.pushButton_preset1.setFont(font)
+        self.pushButton_preset1.setFocusPolicy(Qt.FocusPolicy.NoFocus)
 
         self.verticalLayout.addWidget(self.pushButton_preset1)
 
@@ -63,6 +102,7 @@ class Ui_MainWindow(object):
         self.pushButton_preset2.setSizePolicy(sizePolicy)
         self.pushButton_preset2.setMinimumSize(QSize(0, 0))
         self.pushButton_preset2.setFont(font)
+        self.pushButton_preset2.setFocusPolicy(Qt.FocusPolicy.NoFocus)
 
         self.verticalLayout.addWidget(self.pushButton_preset2)
 
@@ -72,6 +112,7 @@ class Ui_MainWindow(object):
         self.pushButton_preset3.setSizePolicy(sizePolicy)
         self.pushButton_preset3.setMinimumSize(QSize(0, 0))
         self.pushButton_preset3.setFont(font)
+        self.pushButton_preset3.setFocusPolicy(Qt.FocusPolicy.NoFocus)
 
         self.verticalLayout.addWidget(self.pushButton_preset3)
 
@@ -81,6 +122,7 @@ class Ui_MainWindow(object):
         self.pushButton_preset4.setSizePolicy(sizePolicy)
         self.pushButton_preset4.setMinimumSize(QSize(0, 0))
         self.pushButton_preset4.setFont(font)
+        self.pushButton_preset4.setFocusPolicy(Qt.FocusPolicy.NoFocus)
 
         self.verticalLayout.addWidget(self.pushButton_preset4)
 
@@ -90,19 +132,13 @@ class Ui_MainWindow(object):
         self.pushButton_preset5.setSizePolicy(sizePolicy)
         self.pushButton_preset5.setMinimumSize(QSize(0, 0))
         self.pushButton_preset5.setFont(font)
+        self.pushButton_preset5.setFocusPolicy(Qt.FocusPolicy.NoFocus)
 
         self.verticalLayout.addWidget(self.pushButton_preset5)
 
 
-        self.horizontalLayout_4.addWidget(self.groupBox_presets)
+        self.gridLayout.addWidget(self.groupBox_presets, 0, 0, 3, 1)
 
-        self.horizontalSpacer = QSpacerItem(40, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
-
-        self.horizontalLayout_4.addItem(self.horizontalSpacer)
-
-        self.verticalLayout_3 = QVBoxLayout()
-        self.verticalLayout_3.setSpacing(6)
-        self.verticalLayout_3.setObjectName(u"verticalLayout_3")
         self.groupBox_timeSignaturePresets = QGroupBox(self.centralwidget)
         self.groupBox_timeSignaturePresets.setObjectName(u"groupBox_timeSignaturePresets")
         self._2 = QHBoxLayout(self.groupBox_timeSignaturePresets)
@@ -115,10 +151,11 @@ class Ui_MainWindow(object):
         sizePolicy1.setHeightForWidth(self.pushButton_timeSignature_2_4.sizePolicy().hasHeightForWidth())
         self.pushButton_timeSignature_2_4.setSizePolicy(sizePolicy1)
         self.pushButton_timeSignature_2_4.setMinimumSize(QSize(42, 32))
-        self.pushButton_timeSignature_2_4.setMaximumSize(QSize(60, 60))
+        self.pushButton_timeSignature_2_4.setMaximumSize(QSize(60, 48))
         font1 = QFont()
         font1.setPointSize(9)
         self.pushButton_timeSignature_2_4.setFont(font1)
+        self.pushButton_timeSignature_2_4.setFocusPolicy(Qt.FocusPolicy.NoFocus)
 
         self._2.addWidget(self.pushButton_timeSignature_2_4)
 
@@ -131,8 +168,9 @@ class Ui_MainWindow(object):
         sizePolicy1.setHeightForWidth(self.pushButton_timeSignature_3_4.sizePolicy().hasHeightForWidth())
         self.pushButton_timeSignature_3_4.setSizePolicy(sizePolicy1)
         self.pushButton_timeSignature_3_4.setMinimumSize(QSize(42, 32))
-        self.pushButton_timeSignature_3_4.setMaximumSize(QSize(60, 60))
+        self.pushButton_timeSignature_3_4.setMaximumSize(QSize(60, 48))
         self.pushButton_timeSignature_3_4.setFont(font1)
+        self.pushButton_timeSignature_3_4.setFocusPolicy(Qt.FocusPolicy.NoFocus)
 
         self._2.addWidget(self.pushButton_timeSignature_3_4)
 
@@ -145,8 +183,9 @@ class Ui_MainWindow(object):
         sizePolicy1.setHeightForWidth(self.pushButton_timeSignature_4_4.sizePolicy().hasHeightForWidth())
         self.pushButton_timeSignature_4_4.setSizePolicy(sizePolicy1)
         self.pushButton_timeSignature_4_4.setMinimumSize(QSize(42, 32))
-        self.pushButton_timeSignature_4_4.setMaximumSize(QSize(60, 60))
+        self.pushButton_timeSignature_4_4.setMaximumSize(QSize(60, 48))
         self.pushButton_timeSignature_4_4.setFont(font1)
+        self.pushButton_timeSignature_4_4.setFocusPolicy(Qt.FocusPolicy.NoFocus)
 
         self._2.addWidget(self.pushButton_timeSignature_4_4)
 
@@ -159,13 +198,43 @@ class Ui_MainWindow(object):
         sizePolicy1.setHeightForWidth(self.pushButton_timeSignature_6_8.sizePolicy().hasHeightForWidth())
         self.pushButton_timeSignature_6_8.setSizePolicy(sizePolicy1)
         self.pushButton_timeSignature_6_8.setMinimumSize(QSize(42, 32))
-        self.pushButton_timeSignature_6_8.setMaximumSize(QSize(60, 60))
+        self.pushButton_timeSignature_6_8.setMaximumSize(QSize(60, 48))
         self.pushButton_timeSignature_6_8.setFont(font1)
+        self.pushButton_timeSignature_6_8.setFocusPolicy(Qt.FocusPolicy.NoFocus)
 
         self._2.addWidget(self.pushButton_timeSignature_6_8)
 
 
-        self.verticalLayout_3.addWidget(self.groupBox_timeSignaturePresets)
+        self.gridLayout.addWidget(self.groupBox_timeSignaturePresets, 0, 2, 1, 1)
+
+        self.verticalLayout_volumeSlider = QVBoxLayout()
+        self.verticalLayout_volumeSlider.setObjectName(u"verticalLayout_volumeSlider")
+        self.slider_volume = QSlider(self.centralwidget)
+        self.slider_volume.setObjectName(u"slider_volume")
+        self.slider_volume.setFocusPolicy(Qt.FocusPolicy.NoFocus)
+        self.slider_volume.setMaximum(125)
+        self.slider_volume.setSliderPosition(80)
+        self.slider_volume.setOrientation(Qt.Orientation.Vertical)
+
+        self.verticalLayout_volumeSlider.addWidget(self.slider_volume)
+
+        self.pushButton_volumeSymbol = QPushButton(self.centralwidget)
+        self.pushButton_volumeSymbol.setObjectName(u"pushButton_volumeSymbol")
+        self.pushButton_volumeSymbol.setMaximumSize(QSize(16, 16))
+        self.pushButton_volumeSymbol.setFocusPolicy(Qt.FocusPolicy.NoFocus)
+        icon2 = QIcon()
+        icon2.addFile(u":/images/images/volume-symbol.svg", QSize(), QIcon.Mode.Normal, QIcon.State.Off)
+        self.pushButton_volumeSymbol.setIcon(icon2)
+        self.pushButton_volumeSymbol.setFlat(True)
+
+        self.verticalLayout_volumeSlider.addWidget(self.pushButton_volumeSymbol)
+
+
+        self.gridLayout.addLayout(self.verticalLayout_volumeSlider, 0, 4, 3, 1)
+
+        self.horizontalSpacer = QSpacerItem(40, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
+
+        self.gridLayout.addItem(self.horizontalSpacer, 1, 1, 1, 1)
 
         self.groupBox_Tempo = QGroupBox(self.centralwidget)
         self.groupBox_Tempo.setObjectName(u"groupBox_Tempo")
@@ -195,6 +264,7 @@ class Ui_MainWindow(object):
         font2 = QFont()
         font2.setPointSize(20)
         self.spinBox_timeSignatureNumerator.setFont(font2)
+        self.spinBox_timeSignatureNumerator.setFocusPolicy(Qt.FocusPolicy.NoFocus)
         self.spinBox_timeSignatureNumerator.setFrame(False)
         self.spinBox_timeSignatureNumerator.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.spinBox_timeSignatureNumerator.setButtonSymbols(QAbstractSpinBox.ButtonSymbols.NoButtons)
@@ -211,7 +281,6 @@ class Ui_MainWindow(object):
         self.line.setSizePolicy(sizePolicy)
         self.line.setMaximumSize(QSize(48, 20))
         self.line.setFrameShadow(QFrame.Shadow.Plain)
-        self.line.setLineWidth(1)
         self.line.setFrameShape(QFrame.Shape.HLine)
 
         self.verticalLayout_5.addWidget(self.line)
@@ -223,6 +292,7 @@ class Ui_MainWindow(object):
         self.spinBox_timeSignatureDenominator.setMinimumSize(QSize(0, 0))
         self.spinBox_timeSignatureDenominator.setMaximumSize(QSize(48, 48))
         self.spinBox_timeSignatureDenominator.setFont(font2)
+        self.spinBox_timeSignatureDenominator.setFocusPolicy(Qt.FocusPolicy.NoFocus)
         self.spinBox_timeSignatureDenominator.setFrame(False)
         self.spinBox_timeSignatureDenominator.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.spinBox_timeSignatureDenominator.setButtonSymbols(QAbstractSpinBox.ButtonSymbols.NoButtons)
@@ -262,6 +332,7 @@ class Ui_MainWindow(object):
         font3 = QFont()
         font3.setPointSize(40)
         self.spinBox_tempo.setFont(font3)
+        self.spinBox_tempo.setFocusPolicy(Qt.FocusPolicy.NoFocus)
         self.spinBox_tempo.setInputMethodHints(Qt.InputMethodHint.ImhDigitsOnly)
         self.spinBox_tempo.setFrame(False)
         self.spinBox_tempo.setAlignment(Qt.AlignmentFlag.AlignCenter)
@@ -292,6 +363,7 @@ class Ui_MainWindow(object):
         font4.setBold(True)
         font4.setKerning(False)
         self.pushButton_increaseTempo.setFont(font4)
+        self.pushButton_increaseTempo.setFocusPolicy(Qt.FocusPolicy.NoFocus)
 
         self.verticalLayout_IncreaseDecreaseButtons.addWidget(self.pushButton_increaseTempo)
 
@@ -306,6 +378,7 @@ class Ui_MainWindow(object):
         self.pushButton_decreaseTempo.setMinimumSize(QSize(28, 28))
         self.pushButton_decreaseTempo.setMaximumSize(QSize(32, 16777215))
         self.pushButton_decreaseTempo.setFont(font4)
+        self.pushButton_decreaseTempo.setFocusPolicy(Qt.FocusPolicy.NoFocus)
 
         self.verticalLayout_IncreaseDecreaseButtons.addWidget(self.pushButton_decreaseTempo)
 
@@ -321,6 +394,7 @@ class Ui_MainWindow(object):
 
         self.slider_tempo = QSlider(self.groupBox_Tempo)
         self.slider_tempo.setObjectName(u"slider_tempo")
+        self.slider_tempo.setFocusPolicy(Qt.FocusPolicy.NoFocus)
         self.slider_tempo.setMinimum(20)
         self.slider_tempo.setMaximum(260)
         self.slider_tempo.setSliderPosition(100)
@@ -342,17 +416,21 @@ class Ui_MainWindow(object):
         self.horizontalLayout_2.addItem(self.horizontalSpacer_5)
 
 
-        self.verticalLayout_3.addWidget(self.groupBox_Tempo)
+        self.gridLayout.addWidget(self.groupBox_Tempo, 1, 2, 1, 1)
+
+        self.horizontalSpacer_13 = QSpacerItem(10, 20, QSizePolicy.Policy.MinimumExpanding, QSizePolicy.Policy.Minimum)
+
+        self.gridLayout.addItem(self.horizontalSpacer_13, 1, 3, 1, 1)
+
+        self.horizontalSpacer_14 = QSpacerItem(10, 20, QSizePolicy.Policy.MinimumExpanding, QSizePolicy.Policy.Minimum)
+
+        self.gridLayout.addItem(self.horizontalSpacer_14, 1, 5, 1, 1)
 
         self.groupBox_playStopTap = QGroupBox(self.centralwidget)
         self.groupBox_playStopTap.setObjectName(u"groupBox_playStopTap")
         self.groupBox_playStopTap.setMinimumSize(QSize(0, 60))
         self.horizontalLayout_5 = QHBoxLayout(self.groupBox_playStopTap)
         self.horizontalLayout_5.setObjectName(u"horizontalLayout_5")
-        self.horizontalSpacer_8 = QSpacerItem(40, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
-
-        self.horizontalLayout_5.addItem(self.horizontalSpacer_8)
-
         self.pushButton_playStop = QPushButton(self.groupBox_playStopTap)
         self.pushButton_playStop.setObjectName(u"pushButton_playStop")
         sizePolicy3 = QSizePolicy(QSizePolicy.Policy.MinimumExpanding, QSizePolicy.Policy.Fixed)
@@ -366,6 +444,11 @@ class Ui_MainWindow(object):
         font5.setPointSize(12)
         font5.setBold(False)
         self.pushButton_playStop.setFont(font5)
+        self.pushButton_playStop.setFocusPolicy(Qt.FocusPolicy.NoFocus)
+        icon3 = QIcon()
+        icon3.addFile(u":/images/images/play-stop-symbol.svg", QSize(), QIcon.Mode.Normal, QIcon.State.Off)
+        self.pushButton_playStop.setIcon(icon3)
+        self.pushButton_playStop.setIconSize(QSize(80, 32))
 
         self.horizontalLayout_5.addWidget(self.pushButton_playStop)
 
@@ -379,6 +462,7 @@ class Ui_MainWindow(object):
         self.pushButton_tapTempo.setSizePolicy(sizePolicy3)
         self.pushButton_tapTempo.setMinimumSize(QSize(0, 40))
         self.pushButton_tapTempo.setFont(font)
+        self.pushButton_tapTempo.setFocusPolicy(Qt.FocusPolicy.NoFocus)
 
         self.horizontalLayout_5.addWidget(self.pushButton_tapTempo)
 
@@ -395,54 +479,24 @@ class Ui_MainWindow(object):
         font6.setPointSize(12)
         font6.setBold(True)
         self.pushButton_downbeatAccent.setFont(font6)
+        self.pushButton_downbeatAccent.setFocusPolicy(Qt.FocusPolicy.NoFocus)
+        icon4 = QIcon()
+        icon4.addFile(u":/images/images/note-accent-symbol.svg", QSize(), QIcon.Mode.Normal, QIcon.State.Off)
+        self.pushButton_downbeatAccent.setIcon(icon4)
+        self.pushButton_downbeatAccent.setIconSize(QSize(80, 32))
 
         self.horizontalLayout_5.addWidget(self.pushButton_downbeatAccent)
 
-        self.horizontalSpacer_11 = QSpacerItem(40, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
+        self.horizontalLayout_5.setStretch(1, 1)
+        self.horizontalLayout_5.setStretch(3, 1)
 
-        self.horizontalLayout_5.addItem(self.horizontalSpacer_11)
+        self.gridLayout.addWidget(self.groupBox_playStopTap, 2, 2, 1, 1)
 
-        self.horizontalLayout_5.setStretch(2, 1)
-        self.horizontalLayout_5.setStretch(4, 1)
-
-        self.verticalLayout_3.addWidget(self.groupBox_playStopTap)
-
-
-        self.horizontalLayout_4.addLayout(self.verticalLayout_3)
-
-        self.horizontalSpacer_13 = QSpacerItem(10, 20, QSizePolicy.Policy.MinimumExpanding, QSizePolicy.Policy.Minimum)
-
-        self.horizontalLayout_4.addItem(self.horizontalSpacer_13)
-
-        self.verticalLayout_volumeSlider = QVBoxLayout()
-        self.verticalLayout_volumeSlider.setObjectName(u"verticalLayout_volumeSlider")
-        self.slider_volume = QSlider(self.centralwidget)
-        self.slider_volume.setObjectName(u"slider_volume")
-        self.slider_volume.setMaximum(125)
-        self.slider_volume.setSliderPosition(80)
-        self.slider_volume.setOrientation(Qt.Orientation.Vertical)
-
-        self.verticalLayout_volumeSlider.addWidget(self.slider_volume)
-
-        self.pushButton_volumeSymbol = QPushButton(self.centralwidget)
-        self.pushButton_volumeSymbol.setObjectName(u"pushButton_volumeSymbol")
-        self.pushButton_volumeSymbol.setMaximumSize(QSize(16, 16))
-        self.pushButton_volumeSymbol.setFlat(True)
-
-        self.verticalLayout_volumeSlider.addWidget(self.pushButton_volumeSymbol)
-
-
-        self.horizontalLayout_4.addLayout(self.verticalLayout_volumeSlider)
-
-        self.horizontalSpacer_14 = QSpacerItem(10, 20, QSizePolicy.Policy.MinimumExpanding, QSizePolicy.Policy.Minimum)
-
-        self.horizontalLayout_4.addItem(self.horizontalSpacer_14)
-
-        self.horizontalLayout_4.setStretch(1, 1)
+        self.gridLayout.setColumnStretch(1, 1)
         MainWindow.setCentralWidget(self.centralwidget)
         self.menubar = QMenuBar(MainWindow)
         self.menubar.setObjectName(u"menubar")
-        self.menubar.setGeometry(QRect(0, 0, 505, 33))
+        self.menubar.setGeometry(QRect(0, 0, 490, 33))
         self.menuHelp = QMenu(self.menubar)
         self.menuHelp.setObjectName(u"menuHelp")
         self.menu_Application = QMenu(self.menubar)
@@ -485,6 +539,22 @@ class Ui_MainWindow(object):
         self.action_Preferences.setShortcut(QCoreApplication.translate("MainWindow", u"Ctrl+P", None))
 #endif // QT_CONFIG(shortcut)
         self.action_ToggleViewMode.setText(QCoreApplication.translate("MainWindow", u"Compact Mode", None))
+        self.action_OpenDownbeatSoundFile.setText(QCoreApplication.translate("MainWindow", u"Open Downbeat Sound File", None))
+#if QT_CONFIG(shortcut)
+        self.action_OpenDownbeatSoundFile.setShortcut(QCoreApplication.translate("MainWindow", u"Ctrl+D", None))
+#endif // QT_CONFIG(shortcut)
+        self.action_OpenBackbeatSoundFile.setText(QCoreApplication.translate("MainWindow", u"Open Backbeat Sound File", None))
+#if QT_CONFIG(shortcut)
+        self.action_OpenBackbeatSoundFile.setShortcut(QCoreApplication.translate("MainWindow", u"Ctrl+B", None))
+#endif // QT_CONFIG(shortcut)
+#if QT_CONFIG(tooltip)
+        self.pushButton_openDownbeatSoundFile.setToolTip(QCoreApplication.translate("MainWindow", u"Open Downbeat Sound File", None))
+#endif // QT_CONFIG(tooltip)
+        self.pushButton_openDownbeatSoundFile.setText("")
+#if QT_CONFIG(tooltip)
+        self.pushButton_openBackbeatSoundFile.setToolTip(QCoreApplication.translate("MainWindow", u"Open Backbeat Sound File", None))
+#endif // QT_CONFIG(tooltip)
+        self.pushButton_openBackbeatSoundFile.setText("")
 #if QT_CONFIG(tooltip)
         self.pushButton_preset1.setToolTip(QCoreApplication.translate("MainWindow", u"Hold Long to Overwrite", None))
 #endif // QT_CONFIG(tooltip)
@@ -521,6 +591,9 @@ class Ui_MainWindow(object):
         self.pushButton_timeSignature_6_8.setToolTip("")
 #endif // QT_CONFIG(tooltip)
         self.pushButton_timeSignature_6_8.setText(QCoreApplication.translate("MainWindow", u"6/8", None))
+#if QT_CONFIG(tooltip)
+        self.slider_volume.setToolTip(QCoreApplication.translate("MainWindow", u"Volume", None))
+#endif // QT_CONFIG(tooltip)
         self.groupBox_Tempo.setTitle("")
         self.pushButton_increaseTempo.setText(QCoreApplication.translate("MainWindow", u"+", None))
         self.pushButton_decreaseTempo.setText(QCoreApplication.translate("MainWindow", u"-", None))
@@ -530,28 +603,13 @@ class Ui_MainWindow(object):
 #if QT_CONFIG(tooltip)
         self.pushButton_playStop.setToolTip(QCoreApplication.translate("MainWindow", u"Start/Stop", None))
 #endif // QT_CONFIG(tooltip)
-        self.pushButton_playStop.setText(QCoreApplication.translate("MainWindow", u"\u25b6/\u23f8", None))
-#if QT_CONFIG(shortcut)
-        self.pushButton_playStop.setShortcut(QCoreApplication.translate("MainWindow", u"Space", None))
-#endif // QT_CONFIG(shortcut)
 #if QT_CONFIG(tooltip)
         self.pushButton_tapTempo.setToolTip(QCoreApplication.translate("MainWindow", u"Push Repeatedly", None))
 #endif // QT_CONFIG(tooltip)
         self.pushButton_tapTempo.setText(QCoreApplication.translate("MainWindow", u"TAP", None))
-#if QT_CONFIG(shortcut)
-        self.pushButton_tapTempo.setShortcut(QCoreApplication.translate("MainWindow", u"T", None))
-#endif // QT_CONFIG(shortcut)
 #if QT_CONFIG(tooltip)
         self.pushButton_downbeatAccent.setToolTip(QCoreApplication.translate("MainWindow", u"Downbeat Accent On/Off", None))
 #endif // QT_CONFIG(tooltip)
-        self.pushButton_downbeatAccent.setText(QCoreApplication.translate("MainWindow", u">", None))
-#if QT_CONFIG(shortcut)
-        self.pushButton_downbeatAccent.setShortcut(QCoreApplication.translate("MainWindow", u"<", None))
-#endif // QT_CONFIG(shortcut)
-#if QT_CONFIG(tooltip)
-        self.slider_volume.setToolTip(QCoreApplication.translate("MainWindow", u"Volume", None))
-#endif // QT_CONFIG(tooltip)
-        self.pushButton_volumeSymbol.setText(QCoreApplication.translate("MainWindow", u"\U0001f50a", None))
         self.menuHelp.setTitle(QCoreApplication.translate("MainWindow", u"&Help", None))
         self.menu_Application.setTitle(QCoreApplication.translate("MainWindow", u"&Application", None))
         self.menuSettings.setTitle(QCoreApplication.translate("MainWindow", u"Settings", None))

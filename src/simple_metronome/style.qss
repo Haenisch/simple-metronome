@@ -1,3 +1,20 @@
+/* General Stylesheet for Simple Metronome Application */
+
+/**********************************************************************
+ * Colors:
+ * Background: #2b2b2b (dark gray)
+ * Primary Text: #eeeeee (light gray)
+ * Secondary Text: #dddddd (slightly darker gray)
+ * Button Background: #3b3b3b (medium gray)
+ * Button Hover: #505050 (lighter gray)
+ * Button Pressed: #2b2b2b (dark gray)
+ * Border Color: #5a5a5a (gray)
+ * Active Element Background: #0067C0 (blue)
+ * Active Element Pressed Background: #004A8F (darker blue)
+ * Inactive Element Background: #505050 (lighter gray)
+ **********************************************************************/
+
+
 /* Widget */
 QWidget {
     background-color: #2b2b2b;
@@ -135,4 +152,29 @@ QSpinBox#spinBox_tempo {
     border-radius: 8px;
     font-size: 40pt;
     selection-background-color: #505050;
+}
+
+
+/*Menu and Action Entries (make text field width consistent)*/
+QMenu {
+    background-color: #3b3b3b;
+    border: 1px solid #5a5a5a;
+    border-radius: 8px;
+    padding: 5px;
+}
+
+QMenu::item {
+    padding: 5px 5px 5px 5px;
+    color: #dddddd;
+}
+
+QMenu::item:selected {
+    background-color: #505050;
+    color: #ffffff;
+}
+
+QMenu::separator {
+    height: 1px;
+    background: #5a5a5a;
+    margin: 5px 0 5px 0;
 }

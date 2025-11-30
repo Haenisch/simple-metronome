@@ -1,0 +1,11 @@
+<RCC>
+  <qresource prefix="images">
+    <file>images/metronome-icon.svg</file>
+    <file>images/note-accent-symbol.svg</file>
+    <file>images/note-symbol.svg</file>
+    <file>images/open-backbeat-sound-file-symbol.svg</file>
+    <file>images/open-downbeat-sound-file-symbol.svg</file>
+    <file>images/play-stop-symbol.svg</file>
+    <file>images/volume-symbol.svg</file>
+  </qresource>
+</RCC>

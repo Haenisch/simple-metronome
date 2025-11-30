@@ -12,11 +12,6 @@
 # pylint: disable=no-name-in-module
 # pylint: disable=wrong-import-position
 
-# Note, the main window is based on the Qt Designer file 'main_window.ui' from
-# which the file 'ui_main_window.py' is generated using either of the commands:
-#   pyside6-uic .\main_window.ui -o ui_main_window.py
-#   poetry run pyside6-uic .\main_window.ui -o ui_main_window.py
-
 from enum import Enum
 import os
 import time
@@ -24,7 +19,7 @@ import time
 from PySide6.QtCore import QPoint, Qt, QSize, QTimer, QUrl
 from PySide6.QtGui import QIcon, QKeySequence, QMouseEvent, QPixmap, QShortcut
 from PySide6.QtMultimedia import QSoundEffect
-from PySide6.QtWidgets import QMainWindow, QMessageBox
+from PySide6.QtWidgets import QFileDialog, QMainWindow, QMenu, QMessageBox
 import toml
 
 import default_config
@@ -66,6 +61,27 @@ class MainWindow(QMainWindow, Ui_MainWindow):
     Since this application is simple enough, the main window also contains the main logic.
     """
 
+    # Style constants
+    ACTIVE_ELEMENT_BG_COLOR = "#0067C0"
+    ACTIVE_ELEMENT_PRESSED_BG_COLOR = "#004A8F"
+    INACTIVE_ELEMENT_BG_COLOR = "#505050"
+
+    PRESET_ACTIVE_BG_COLOR = "#44505a"
+    PRESET_HOVER_BG_COLOR = "#505050"
+    PRESET_INACTIVE_BG_COLOR = "#3b3b3b"
+    PRESET_PRESSED_BG_COLOR = "#2b2b2b"
+
+    PRESET_ACTIVE_STYLE = f"QPushButton {{background: {PRESET_ACTIVE_BG_COLOR};}}" + \
+                          f"QPushButton:hover {{background: {PRESET_HOVER_BG_COLOR};}}" + \
+                          f"QPushButton:pressed {{background: {PRESET_PRESSED_BG_COLOR};}}" + \
+                          f"QPushButton:disabled {{background: {PRESET_INACTIVE_BG_COLOR};}}"
+
+    PRESET_INACTIVE_STYLE = f"QPushButton {{background: {PRESET_INACTIVE_BG_COLOR};}}" + \
+                            f"QPushButton:hover {{background: {PRESET_HOVER_BG_COLOR};}}" + \
+                            f"QPushButton:pressed {{background: {PRESET_PRESSED_BG_COLOR};}}" + \
+                            f"QPushButton:disabled {{background: {PRESET_INACTIVE_BG_COLOR};}}"
+
+    # Other constants
     MAX_TEMPO = 260
     MIN_TEMPO = 20
     MAX_VOLUME = 100
@@ -88,7 +104,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.setWindowTitle("Simple Metronome")
         self.menubar.hide()
         self.init_geometry()
-        self.slider_volume.setFocus()
+        self.pushButton_preset1.setStyleSheet(self.PRESET_ACTIVE_STYLE)
 
         self.player_downbeat = QSoundEffect()
         self.player_downbeat.setLoopCount(1)
@@ -107,6 +123,10 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
         self.view_mode_expanded = True
 
+        # Load resources.
+        self.icon_note = QIcon(":images/images/note-symbol.svg")
+        self.icon_note_accent = QIcon(":images/images/note-accent-symbol.svg")
+
         # Load the configuration.
         self.config = {}
         self.load_config()
@@ -124,13 +144,15 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
         self.downbeat_volume = self.config["general_settings"]["downbeat_volume"]
         self.backbeat_volume = self.config["general_settings"]["backbeat_volume"]
-        self.player_downbeat.setSource(QUrl.fromLocalFile(self.config["preset1"]["downbeat_sound_file"]))
-        self.player_backbeat.setSource(QUrl.fromLocalFile(self.config["preset1"]["backbeat_sound_file"]))
+        self.current_downbeat_sound_file = self.config["preset1"]["downbeat_sound_file"]
+        self.current_backbeat_sound_file = self.config["preset1"]["backbeat_sound_file"]
+        self.player_downbeat.setSource(QUrl.fromLocalFile(self.current_downbeat_sound_file))
+        self.player_backbeat.setSource(QUrl.fromLocalFile(self.current_backbeat_sound_file))
         self.preset_downbeat_volume = self.config["preset1"]["downbeat_volume"]  # allows for correcting volume levels per preset
         self.preset_backbeat_volume = self.config["preset1"]["backbeat_volume"]  # allows for correcting volume levels per preset
 
         # Connect the GUI elements.
-        self.pushButton_downbeatAccent.clicked.connect(self.toggle_downbeat_accent)
+        self.pushButton_downbeatAccent.clicked.connect(self.on_toggle_downbeat_accent)
         self.pushButton_playStop.clicked.connect(self.on_play_stop_clicked)
         self.pushButton_preset1.clicked.connect(self.on_preset1_clicked)
         self.pushButton_preset2.clicked.connect(self.on_preset2_clicked)
@@ -149,23 +171,11 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
         # Set up the menu bar.
         self.action_About.triggered.connect(lambda: QMessageBox.information(self, "About", f"A Simple Metronome\nVersion {VERSION}\n(c) 2025 Christoph Hänisch"))
+        self.action_OpenBackbeatSoundFile.triggered.connect(self.on_open_backbeat_sound_file)
+        self.action_OpenDownbeatSoundFile.triggered.connect(self.on_open_downbeat_sound_file)
         self.action_Preferences.triggered.connect(self.show_settings_dialog)
         self.action_Quit.triggered.connect(self.close)
         self.action_ToggleViewMode.triggered.connect(self.on_toggle_view_mode)
-
-        # Exchange the unicode text in some buttons with icons.
-        icon_play_stop = QIcon("images/play-stop-symbol.png")
-        self.pushButton_playStop.setIcon(icon_play_stop)
-        self.pushButton_playStop.setIconSize(self.pushButton_playStop.size() * 0.8)
-        self.pushButton_playStop.setText("")
-        icon_note_accent = QIcon("images/note-accent-symbol.png")
-        self.pushButton_downbeatAccent.setIcon(icon_note_accent)
-        self.pushButton_downbeatAccent.setIconSize(self.pushButton_downbeatAccent.size() * 0.8)
-        self.pushButton_downbeatAccent.setText("")
-        icon_volume_symbol = QPixmap("images/volume-symbol.svg")
-        self.pushButton_volumeSymbol.setIcon(QIcon(icon_volume_symbol))
-        self.pushButton_volumeSymbol.setIconSize(QSize(16, 16))
-        self.pushButton_volumeSymbol.setText("")
 
         # Add global shortcuts.
         self.shortcut_about = QShortcut(QKeySequence("F1"), self)
@@ -176,22 +186,31 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.shortcut_quit.activated.connect(self.close)
 
         self.shortcut_start_stop = QShortcut(QKeySequence("Space"), self)
-        self.shortcut_start_stop.activated.connect(self.on_play_stop_clicked)
-        # self.shortcut_tap = QShortcut(QKeySequence("T"), self)
-        # self.shortcut_tap.activated.connect(self.on_tap_tempo_clicked)
+        self.shortcut_start_stop.activated.connect(self.pushButton_playStop.animateClick)
+        self.shortcut_tap = QShortcut(QKeySequence("T"), self)
+        self.shortcut_tap.activated.connect(self.pushButton_tapTempo.animateClick)
         self.shortcut_toggle_downbeat_accent = QShortcut(QKeySequence("<"), self)
-        self.shortcut_toggle_downbeat_accent.activated.connect(self.toggle_downbeat_accent)
+        self.shortcut_toggle_downbeat_accent.activated.connect(self.pushButton_downbeatAccent.animateClick)
         self.shortcut_toggle_downbeat_accent = QShortcut(QKeySequence("a"), self)
-        self.shortcut_toggle_downbeat_accent.activated.connect(self.toggle_downbeat_accent)
+        self.shortcut_toggle_downbeat_accent.activated.connect(self.pushButton_downbeatAccent.animateClick)
 
+        self.alternative_shortcut_decrease_tempo = QShortcut(QKeySequence("Left"), self)
+        self.alternative_shortcut_decrease_tempo.activated.connect(self.pushButton_decreaseTempo.click)
+        self.alternative_shortcut_increase_tempo = QShortcut(QKeySequence("Right"), self)
+        self.alternative_shortcut_increase_tempo.activated.connect(self.pushButton_increaseTempo.click)
         self.shortcut_decrease_tempo = QShortcut(QKeySequence("-"), self)
-        self.shortcut_decrease_tempo.activated.connect(self.pushButton_decreaseTempo.click)
+        self.shortcut_decrease_tempo.activated.connect(self.pushButton_decreaseTempo.animateClick)
         self.shortcut_increase_tempo = QShortcut(QKeySequence("+"), self)
-        self.shortcut_increase_tempo.activated.connect(self.pushButton_increaseTempo.click)
+        self.shortcut_increase_tempo.activated.connect(self.pushButton_increaseTempo.animateClick)
         self.shortcut_fast_decrease_tempo = QShortcut(QKeySequence("PgDown"), self)
         self.shortcut_fast_decrease_tempo.activated.connect(lambda: self.set_tempo(max(20, self.tempo - 10)))
         self.shortcut_fast_increase_tempo = QShortcut(QKeySequence("PgUp"), self)
         self.shortcut_fast_increase_tempo.activated.connect(lambda: self.set_tempo(min(260, self.tempo + 10)))
+
+        self.shortcut_decrease_volume = QShortcut(QKeySequence("Down"), self)
+        self.shortcut_decrease_volume.activated.connect(lambda: self.slider_volume.setValue(max(0, self.volume - 1)))
+        self.shortcut_increase_volume = QShortcut(QKeySequence("Up"), self)
+        self.shortcut_increase_volume.activated.connect(lambda: self.slider_volume.setValue(min(125, self.volume + 1)))
 
         self.shortcut_load_preset_1 = QShortcut(QKeySequence("1"), self)
         self.shortcut_load_preset_1.activated.connect(lambda:self.load_preset(1))
@@ -220,7 +239,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
     def init_geometry(self):
         """Initialize the geometry of the main window."""
         screen_geometry = self.screen().geometry()
-        width, height = 470, 268
+        width, height = 500, 268
         x = (screen_geometry.width() - width) // 2
         y = (screen_geometry.height() - height) // 2
         self.setGeometry(x, y, width, height)
@@ -302,6 +321,28 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             event.accept()
 
 
+    def on_open_backbeat_sound_file(self):
+        """Open a file dialog to select a backbeat sound file."""
+        file_dialog = QFileDialog(self, "Select Backbeat Sound File", os.getcwd(), "Audio Files (*.wav *.mp3 *.ogg)")
+        if file_dialog.exec():
+            selected_files = file_dialog.selectedFiles()
+            if selected_files:
+                sound_file = selected_files[0]
+                self.current_backbeat_sound_file = sound_file
+                self.player_backbeat.setSource(QUrl.fromLocalFile(sound_file))
+
+
+    def on_open_downbeat_sound_file(self):
+        """Open a file dialog to select a downbeat sound file."""
+        file_dialog = QFileDialog(self, "Select Downbeat Sound File", os.getcwd(), "Audio Files (*.wav *.mp3 *.ogg)")
+        if file_dialog.exec():
+            selected_files = file_dialog.selectedFiles()
+            if selected_files:
+                sound_file = selected_files[0]
+                self.current_downbeat_sound_file = sound_file
+                self.player_downbeat.setSource(QUrl.fromLocalFile(sound_file))
+
+
     def on_play_stop_clicked(self):
         """Play or stop the metronome."""
         if not self.playing:
@@ -363,7 +404,10 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         if self.tap_state == MainWindow.TapState.WAITING_FOR_FIRST_TAP:
             # First tap: store the current time and change the button color.
             self.tap_times_ns = [time.time_ns()]
-            self.pushButton_tapTempo.setStyleSheet("background-color: "+"#0067C0")  # blue
+            # Change the button color to indicate tap tempo mode.
+            style = "QPushButton {background-color:" + self.ACTIVE_ELEMENT_BG_COLOR + ";} " + \
+                    "QPushButton:pressed {background-color: " + self.ACTIVE_ELEMENT_PRESSED_BG_COLOR + ";}"
+            self.pushButton_tapTempo.setStyleSheet(style)
             self.tap_state = MainWindow.TapState.COLLECTING_TAPS
             # Start a single-shot timer to end the tap sequence after a timeout.
             self.tap_timer.start(self.TAP_TIMEOUT_MS)
@@ -425,12 +469,19 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.set_time_signature(self.time_signature_numerator, value)
 
 
+    def on_toggle_downbeat_accent(self):
+        """Toggle the downbeat accent setting."""
+        self.downbeat_accent = not self.downbeat_accent
+        self.config["general_settings"]["downbeat_accent"] = self.downbeat_accent
+        self.pushButton_downbeatAccent.setIcon(self.icon_note_accent if self.downbeat_accent else self.icon_note)
+
+
     def on_toggle_view_mode(self):
         """Toggle the visibility of the preset and time signature buttons."""
         if self.view_mode_expanded:
             # switch to compact view
             self.view_mode_expanded = False
-            self.setWindowFlags(Qt.FramelessWindowHint)
+            self.setWindowFlags(Qt.FramelessWindowHint)  # type: ignore
             self.groupBox_presets.hide()
             self.groupBox_timeSignaturePresets.hide()
             self.slider_volume.setFocus()
@@ -441,14 +492,14 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         else:
             # switch to expanded view
             self.view_mode_expanded = True
-            self.setWindowFlags(Qt.Window)
+            self.setWindowFlags(Qt.Window)  # type: ignore
             self.groupBox_presets.show()
             self.groupBox_timeSignaturePresets.show()
             self.slider_volume.setFocus()
             self.adjustSize()
-            self.resize(478, 268)
+            self.resize(500, 268)  # former size: 478x268
             self.show()
-            QTimer.singleShot(0, lambda: self.resize(478, 268))
+            QTimer.singleShot(0, lambda: self.resize(500, 268))
 
 
     def on_volume_changed(self, value: int):
@@ -538,9 +589,3 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         """Setup the settings dialog."""
         self.settings_dialog = SettingsDialog(parent=self)
         self.settings_dialog.hide()
-
-
-    def toggle_downbeat_accent(self):
-        """Toggle the downbeat accent setting."""
-        self.downbeat_accent = not self.downbeat_accent
-        self.config["general_settings"]["downbeat_accent"] = self.downbeat_accent
