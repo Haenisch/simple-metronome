@@ -106,6 +106,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.init_geometry()
         self.pushButton_preset1.setStyleSheet(self.PRESET_ACTIVE_STYLE)
 
+        # Initialize variables for metronome state.
         self.player_downbeat = QSoundEffect()
         self.player_downbeat.setLoopCount(1)
         self.player_backbeat = QSoundEffect()
@@ -114,6 +115,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.current_beat = 0
         self.next_beat_system_time_ns = 0  # system time for the next beat in nanoseconds
 
+        # Tap tempo state variables.
         self.tap_state = MainWindow.TapState.WAITING_FOR_FIRST_TAP
         self.tap_times_ns = []  # list of system times at taps in nanoseconds
         self.tap_timer = QTimer()
@@ -121,6 +123,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.tap_timer.setTimerType(Qt.PreciseTimer)  # type: ignore
         self.tap_timer.timeout.connect(self.on_tap_tempo_timeout)
 
+        # View mode state variable.
         self.view_mode_expanded = True
 
         # Load resources.
@@ -132,7 +135,126 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.load_config()
 
         # Initialize settings from the configuration.
+        self.init_with_config_values()
+
+        # Connect the GUI elements.
+        self.connect_signals()
+
+        # Set up the menu bar.
+        self.setup_menubar()
+
+        # Add global shortcuts.
+        self.add_shortcuts()
+
+        # Set up the preferences dialog.
+        self.setup_dialogs()
+
+
+    def add_shortcuts(self):
+        """Add global keyboard shortcuts."""
+        self.shortcut_about = QShortcut(QKeySequence("F1"), self)
+        self.shortcut_about.activated.connect(lambda: QMessageBox.information(self, "About", f"A Simple Metronome\nVersion {VERSION}\n(c) 2025 Christoph Hänisch"))
+        self.shortcut_preferences = QShortcut(QKeySequence("Ctrl+P"), self)
+        self.shortcut_preferences.activated.connect(self.show_settings_dialog)
+        self.shortcut_quit = QShortcut(QKeySequence("Ctrl+Q"), self)
+        self.shortcut_quit.activated.connect(self.close)
+
+        self.shortcut_start_stop = QShortcut(QKeySequence("Space"), self)
+        self.shortcut_start_stop.activated.connect(self.pushButton_playStop.animateClick)
+        self.shortcut_tap = QShortcut(QKeySequence("T"), self)
+        self.shortcut_tap.activated.connect(self.pushButton_tapTempo.animateClick)
+        self.shortcut_toggle_downbeat_accent = QShortcut(QKeySequence("<"), self)
+        self.shortcut_toggle_downbeat_accent.activated.connect(self.pushButton_downbeatAccent.animateClick)
+        self.alternative_shortcut_toggle_downbeat_accent = QShortcut(QKeySequence("a"), self)
+        self.alternative_shortcut_toggle_downbeat_accent.activated.connect(self.pushButton_downbeatAccent.animateClick)
+
+        self.shortcut_decrease_time_signature_denominator = QShortcut(QKeySequence("F9"), self)
+        self.shortcut_decrease_time_signature_denominator.activated.connect(lambda: self.spinBox_timeSignatureDenominator.setValue(self.spinBox_timeSignatureDenominator.value() - 1))
+        self.shortcut_increase_time_signature_denominator = QShortcut(QKeySequence("F10"), self)
+        self.shortcut_increase_time_signature_denominator.activated.connect(lambda: self.spinBox_timeSignatureDenominator.setValue(self.spinBox_timeSignatureDenominator.value() + 1))
+        self.shortcut_decrease_time_signature_numerator = QShortcut(QKeySequence("F11"), self)
+        self.shortcut_decrease_time_signature_numerator.activated.connect(lambda: self.spinBox_timeSignatureNumerator.setValue(self.spinBox_timeSignatureNumerator.value() - 1))
+        self.shortcut_increase_time_signature_numerator = QShortcut(QKeySequence("F12"), self)
+        self.shortcut_increase_time_signature_numerator.activated.connect(lambda: self.spinBox_timeSignatureNumerator.setValue(self.spinBox_timeSignatureNumerator.value() + 1))
+
+        self.alternative_shortcut_decrease_tempo = QShortcut(QKeySequence("Left"), self)
+        self.alternative_shortcut_decrease_tempo.activated.connect(self.pushButton_decreaseTempo.click)
+        self.alternative_shortcut_increase_tempo = QShortcut(QKeySequence("Right"), self)
+        self.alternative_shortcut_increase_tempo.activated.connect(self.pushButton_increaseTempo.click)
+        self.shortcut_decrease_tempo = QShortcut(QKeySequence("-"), self)
+        self.shortcut_decrease_tempo.activated.connect(self.pushButton_decreaseTempo.click)
+        self.shortcut_increase_tempo = QShortcut(QKeySequence("+"), self)
+        self.shortcut_increase_tempo.activated.connect(self.pushButton_increaseTempo.click)
+        self.shortcut_fast_decrease_tempo = QShortcut(QKeySequence("PgDown"), self)
+        self.shortcut_fast_decrease_tempo.activated.connect(lambda: self.set_tempo(max(20, self.tempo - 10)))
+        self.shortcut_fast_increase_tempo = QShortcut(QKeySequence("PgUp"), self)
+        self.shortcut_fast_increase_tempo.activated.connect(lambda: self.set_tempo(min(260, self.tempo + 10)))
+
+        self.shortcut_decrease_volume = QShortcut(QKeySequence("Down"), self)
+        self.shortcut_decrease_volume.activated.connect(lambda: self.slider_volume.setValue(max(0, self.volume - 1)))
+        self.shortcut_increase_volume = QShortcut(QKeySequence("Up"), self)
+        self.shortcut_increase_volume.activated.connect(lambda: self.slider_volume.setValue(min(125, self.volume + 1)))
+        self.shortcut_volume_25 = QShortcut(QKeySequence("F5"), self)
+        self.shortcut_volume_25.activated.connect(lambda: self.slider_volume.setValue(25))
+        self.shortcut_volume_50 = QShortcut(QKeySequence("F6"), self)
+        self.shortcut_volume_50.activated.connect(lambda: self.slider_volume.setValue(50))
+        self.shortcut_volume_75 = QShortcut(QKeySequence("F7"), self)
+        self.shortcut_volume_75.activated.connect(lambda: self.slider_volume.setValue(75))
+        self.shortcut_volume_100 = QShortcut(QKeySequence("F8"), self)
+        self.shortcut_volume_100.activated.connect(lambda: self.slider_volume.setValue(100))
+
+        self.shortcut_load_preset_1 = QShortcut(QKeySequence("1"), self)
+        self.shortcut_load_preset_1.activated.connect(lambda:self.load_preset(1))
+        self.shortcut_load_preset_1 = QShortcut(QKeySequence("2"), self)
+        self.shortcut_load_preset_1.activated.connect(lambda:self.load_preset(2))
+        self.shortcut_load_preset_1 = QShortcut(QKeySequence("3"), self)
+        self.shortcut_load_preset_1.activated.connect(lambda:self.load_preset(3))
+        self.shortcut_load_preset_1 = QShortcut(QKeySequence("4"), self)
+        self.shortcut_load_preset_1.activated.connect(lambda:self.load_preset(4))
+        self.shortcut_load_preset_1 = QShortcut(QKeySequence("5"), self)
+        self.shortcut_load_preset_1.activated.connect(lambda:self.load_preset(5))
+
+        self.shortcut_toggle_view_mode = QShortcut(QKeySequence("M"), self)
+        self.shortcut_toggle_view_mode.activated.connect(self.on_toggle_view_mode)
+
+
+    def closeEvent(self, event):
+        """Handle the close event of the main window."""
+        self.save_config()
+        event.accept()
+
+
+    def connect_signals(self):
+        """Connect GUI elements to their callback functions."""
+        self.pushButton_openDownbeatSoundFile.clicked.connect(lambda: self.on_open_downbeat_sound_file())
+        self.pushButton_openBackbeatSoundFile.clicked.connect(lambda: self.on_open_backbeat_sound_file())
+
+        self.pushButton_preset1.clicked.connect(self.on_preset1_clicked)
+        self.pushButton_preset2.clicked.connect(self.on_preset2_clicked)
+        self.pushButton_preset3.clicked.connect(self.on_preset3_clicked)
+        self.pushButton_preset4.clicked.connect(self.on_preset4_clicked)
+        self.pushButton_preset5.clicked.connect(self.on_preset5_clicked)
+
+        self.pushButton_playStop.clicked.connect(self.on_play_stop_clicked)
+        self.pushButton_tapTempo.clicked.connect(self.on_tap_tempo_clicked)
+        self.pushButton_downbeatAccent.clicked.connect(self.on_toggle_downbeat_accent)
+
+        self.pushButton_timeSignature_2_4.clicked.connect(self.on_time_signature_2_4_clicked)
+        self.pushButton_timeSignature_3_4.clicked.connect(self.on_time_signature_3_4_clicked)
+        self.pushButton_timeSignature_4_4.clicked.connect(self.on_time_signature_4_4_clicked)
+        self.pushButton_timeSignature_6_8.clicked.connect(self.on_time_signature_6_8_clicked)
+        self.spinBox_timeSignatureDenominator.valueChanged.connect(self.on_time_signature_denominator_changed)
+        self.spinBox_timeSignatureNumerator.valueChanged.connect(self.on_time_signature_numerator_changed)
+
+        self.spinBox_tempo.valueChanged.connect(self.set_tempo)
+
+        self.slider_volume.valueChanged.connect(self.on_volume_changed)
+
+
+    def init_with_config_values(self):
+        """Initialize the main window with configuration values."""
         self.downbeat_accent = self.config["general_settings"]["downbeat_accent"]
+        self.pushButton_downbeatAccent.setIcon(self.icon_note_accent if self.downbeat_accent else self.icon_note)
         self.time_signature_numerator = int(self.config["general_settings"]["time_signature_numerator"])
         self.time_signature_denominator = int(self.config["general_settings"]["time_signature_denominator"])
         self.set_time_signature(self.time_signature_numerator, self.time_signature_denominator)
@@ -150,91 +272,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.player_backbeat.setSource(QUrl.fromLocalFile(self.current_backbeat_sound_file))
         self.preset_downbeat_volume = self.config["preset1"]["downbeat_volume"]  # allows for correcting volume levels per preset
         self.preset_backbeat_volume = self.config["preset1"]["backbeat_volume"]  # allows for correcting volume levels per preset
-
-        # Connect the GUI elements.
-        self.pushButton_downbeatAccent.clicked.connect(self.on_toggle_downbeat_accent)
-        self.pushButton_playStop.clicked.connect(self.on_play_stop_clicked)
-        self.pushButton_preset1.clicked.connect(self.on_preset1_clicked)
-        self.pushButton_preset2.clicked.connect(self.on_preset2_clicked)
-        self.pushButton_preset3.clicked.connect(self.on_preset3_clicked)
-        self.pushButton_preset4.clicked.connect(self.on_preset4_clicked)
-        self.pushButton_preset5.clicked.connect(self.on_preset5_clicked)
-        self.pushButton_tapTempo.clicked.connect(self.on_tap_tempo_clicked)
-        self.pushButton_timeSignature_2_4.clicked.connect(self.on_time_signature_2_4_clicked)
-        self.pushButton_timeSignature_3_4.clicked.connect(self.on_time_signature_3_4_clicked)
-        self.pushButton_timeSignature_4_4.clicked.connect(self.on_time_signature_4_4_clicked)
-        self.pushButton_timeSignature_6_8.clicked.connect(self.on_time_signature_6_8_clicked)
-        self.slider_volume.valueChanged.connect(self.on_volume_changed)
-        self.spinBox_tempo.valueChanged.connect(self.set_tempo)
-        self.spinBox_timeSignatureDenominator.valueChanged.connect(self.on_time_signature_denominator_changed)
-        self.spinBox_timeSignatureNumerator.valueChanged.connect(self.on_time_signature_numerator_changed)
-
-        # Set up the menu bar.
-        self.action_About.triggered.connect(lambda: QMessageBox.information(self, "About", f"A Simple Metronome\nVersion {VERSION}\n(c) 2025 Christoph Hänisch"))
-        self.action_OpenBackbeatSoundFile.triggered.connect(self.on_open_backbeat_sound_file)
-        self.action_OpenDownbeatSoundFile.triggered.connect(self.on_open_downbeat_sound_file)
-        self.action_Preferences.triggered.connect(self.show_settings_dialog)
-        self.action_Quit.triggered.connect(self.close)
-        self.action_ToggleViewMode.triggered.connect(self.on_toggle_view_mode)
-
-        # Add global shortcuts.
-        self.shortcut_about = QShortcut(QKeySequence("F1"), self)
-        self.shortcut_about.activated.connect(lambda: QMessageBox.information(self, "About", f"A Simple Metronome\nVersion {VERSION}\n(c) 2025 Christoph Hänisch"))
-        self.shortcut_preferences = QShortcut(QKeySequence("Ctrl+P"), self)
-        self.shortcut_preferences.activated.connect(self.show_settings_dialog)
-        self.shortcut_quit = QShortcut(QKeySequence("Ctrl+Q"), self)
-        self.shortcut_quit.activated.connect(self.close)
-
-        self.shortcut_start_stop = QShortcut(QKeySequence("Space"), self)
-        self.shortcut_start_stop.activated.connect(self.pushButton_playStop.animateClick)
-        self.shortcut_tap = QShortcut(QKeySequence("T"), self)
-        self.shortcut_tap.activated.connect(self.pushButton_tapTempo.animateClick)
-        self.shortcut_toggle_downbeat_accent = QShortcut(QKeySequence("<"), self)
-        self.shortcut_toggle_downbeat_accent.activated.connect(self.pushButton_downbeatAccent.animateClick)
-        self.shortcut_toggle_downbeat_accent = QShortcut(QKeySequence("a"), self)
-        self.shortcut_toggle_downbeat_accent.activated.connect(self.pushButton_downbeatAccent.animateClick)
-
-        self.alternative_shortcut_decrease_tempo = QShortcut(QKeySequence("Left"), self)
-        self.alternative_shortcut_decrease_tempo.activated.connect(self.pushButton_decreaseTempo.click)
-        self.alternative_shortcut_increase_tempo = QShortcut(QKeySequence("Right"), self)
-        self.alternative_shortcut_increase_tempo.activated.connect(self.pushButton_increaseTempo.click)
-        self.shortcut_decrease_tempo = QShortcut(QKeySequence("-"), self)
-        self.shortcut_decrease_tempo.activated.connect(self.pushButton_decreaseTempo.animateClick)
-        self.shortcut_increase_tempo = QShortcut(QKeySequence("+"), self)
-        self.shortcut_increase_tempo.activated.connect(self.pushButton_increaseTempo.animateClick)
-        self.shortcut_fast_decrease_tempo = QShortcut(QKeySequence("PgDown"), self)
-        self.shortcut_fast_decrease_tempo.activated.connect(lambda: self.set_tempo(max(20, self.tempo - 10)))
-        self.shortcut_fast_increase_tempo = QShortcut(QKeySequence("PgUp"), self)
-        self.shortcut_fast_increase_tempo.activated.connect(lambda: self.set_tempo(min(260, self.tempo + 10)))
-
-        self.shortcut_decrease_volume = QShortcut(QKeySequence("Down"), self)
-        self.shortcut_decrease_volume.activated.connect(lambda: self.slider_volume.setValue(max(0, self.volume - 1)))
-        self.shortcut_increase_volume = QShortcut(QKeySequence("Up"), self)
-        self.shortcut_increase_volume.activated.connect(lambda: self.slider_volume.setValue(min(125, self.volume + 1)))
-
-        self.shortcut_load_preset_1 = QShortcut(QKeySequence("1"), self)
-        self.shortcut_load_preset_1.activated.connect(lambda:self.load_preset(1))
-        self.shortcut_load_preset_1 = QShortcut(QKeySequence("2"), self)
-        self.shortcut_load_preset_1.activated.connect(lambda:self.load_preset(2))
-        self.shortcut_load_preset_1 = QShortcut(QKeySequence("3"), self)
-        self.shortcut_load_preset_1.activated.connect(lambda:self.load_preset(3))
-        self.shortcut_load_preset_1 = QShortcut(QKeySequence("4"), self)
-        self.shortcut_load_preset_1.activated.connect(lambda:self.load_preset(4))
-        self.shortcut_load_preset_1 = QShortcut(QKeySequence("5"), self)
-        self.shortcut_load_preset_1.activated.connect(lambda:self.load_preset(5))
-
-        self.shortcut_toggle_view_mode = QShortcut(QKeySequence("M"), self)
-        self.shortcut_toggle_view_mode.activated.connect(self.on_toggle_view_mode)
-
-        # Set up the preferences dialog.
-        self.setup_dialogs()
-
-
-    def closeEvent(self, event):
-        """Handle the close event of the main window."""
-        self.save_config()
-        event.accept()
-
 
     def init_geometry(self):
         """Initialize the geometry of the main window."""
@@ -334,7 +371,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
     def on_open_downbeat_sound_file(self):
         """Open a file dialog to select a downbeat sound file."""
-        file_dialog = QFileDialog(self, "Select Downbeat Sound File", os.getcwd(), "Audio Files (*.wav *.mp3 *.ogg)")
+        file_dialog = QFileDialog(self, "Select Downbeat Sound File", os.getcwd(), "Audio Files (*.wav);;All Files (*.*)")
         if file_dialog.exec():
             selected_files = file_dialog.selectedFiles()
             if selected_files:
@@ -577,6 +614,14 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.volume = volume
         self.slider_volume.setValue(volume)
         self.config["general_settings"]["volume"] = volume
+
+
+    def setup_menubar(self):
+        """Setup the menu bar."""
+        self.action_About.triggered.connect(lambda: QMessageBox.information(self, "About", f"A Simple Metronome\nVersion {VERSION}\n(c) 2025 Christoph Hänisch"))
+        self.action_Preferences.triggered.connect(self.show_settings_dialog)
+        self.action_Quit.triggered.connect(self.close)
+        self.action_ToggleViewMode.triggered.connect(self.on_toggle_view_mode)
 
 
     def show_settings_dialog(self):
