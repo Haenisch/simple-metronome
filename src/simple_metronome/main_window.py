@@ -16,21 +16,51 @@ from enum import Enum
 import os
 import time
 
-from PySide6.QtCore import QPoint, Qt, QSize, QTimer, QUrl
-from PySide6.QtGui import QIcon, QKeySequence, QMouseEvent, QPixmap, QShortcut
+from PySide6.QtCore import QPoint, Qt, QTimer, QUrl
+from PySide6.QtGui import QIcon, QKeySequence, QMouseEvent, QShortcut
 from PySide6.QtMultimedia import QSoundEffect
-from PySide6.QtWidgets import QFileDialog, QMainWindow, QMenu, QMessageBox
-import toml
+from PySide6.QtWidgets import QFileDialog, QMainWindow, QMessageBox
 
-import default_config
-from settings_dialog import SettingsDialog
-from ui_main_window import Ui_MainWindow
-from version import VERSION
+from . configuration import save_config
+from . settings_dialog import SettingsDialog
+from . ui_main_window import Ui_MainWindow
+from . version import VERSION
+
+
+##################################################################################################
+# Style Constants
+##################################################################################################
+
+ACTIVE_ELEMENT_BG_COLOR = "#0067C0"
+ACTIVE_ELEMENT_PRESSED_BG_COLOR = "#004A8F"
+INACTIVE_ELEMENT_BG_COLOR = "#505050"
+
+PRESET_ACTIVE_BG_COLOR = "#44505a"
+PRESET_HOVER_BG_COLOR = "#505050"
+PRESET_INACTIVE_BG_COLOR = "#3b3b3b"
+PRESET_PRESSED_BG_COLOR = "#2b2b2b"
+
+PRESET_ACTIVE_STYLE = f"QPushButton {{background: {PRESET_ACTIVE_BG_COLOR};}}" + \
+                        f"QPushButton:hover {{background: {PRESET_HOVER_BG_COLOR};}}" + \
+                        f"QPushButton:pressed {{background: {PRESET_PRESSED_BG_COLOR};}}" + \
+                        f"QPushButton:disabled {{background: {PRESET_INACTIVE_BG_COLOR};}}"
+
+PRESET_INACTIVE_STYLE = f"QPushButton {{background: {PRESET_INACTIVE_BG_COLOR};}}" + \
+                        f"QPushButton:hover {{background: {PRESET_HOVER_BG_COLOR};}}" + \
+                        f"QPushButton:pressed {{background: {PRESET_PRESSED_BG_COLOR};}}" + \
+                        f"QPushButton:disabled {{background: {PRESET_INACTIVE_BG_COLOR};}}"
 
 
 ##################################################################################################
 # Helper Functions
 ##################################################################################################
+
+def shifted_range(start, stop=None, step=1, offset=0):
+    """Like range(), but with an offset applied to start and stop."""
+    if stop is None:  # called like range(n)
+        start, stop = 0, start
+    return range(start + offset, stop + offset, step)
+
 
 def static_variables(**kwargs):
     """Decorator to add one or more static variables to a function.
@@ -61,33 +91,13 @@ class MainWindow(QMainWindow, Ui_MainWindow):
     Since this application is simple enough, the main window also contains the main logic.
     """
 
-    # Style constants
-    ACTIVE_ELEMENT_BG_COLOR = "#0067C0"
-    ACTIVE_ELEMENT_PRESSED_BG_COLOR = "#004A8F"
-    INACTIVE_ELEMENT_BG_COLOR = "#505050"
-
-    PRESET_ACTIVE_BG_COLOR = "#44505a"
-    PRESET_HOVER_BG_COLOR = "#505050"
-    PRESET_INACTIVE_BG_COLOR = "#3b3b3b"
-    PRESET_PRESSED_BG_COLOR = "#2b2b2b"
-
-    PRESET_ACTIVE_STYLE = f"QPushButton {{background: {PRESET_ACTIVE_BG_COLOR};}}" + \
-                          f"QPushButton:hover {{background: {PRESET_HOVER_BG_COLOR};}}" + \
-                          f"QPushButton:pressed {{background: {PRESET_PRESSED_BG_COLOR};}}" + \
-                          f"QPushButton:disabled {{background: {PRESET_INACTIVE_BG_COLOR};}}"
-
-    PRESET_INACTIVE_STYLE = f"QPushButton {{background: {PRESET_INACTIVE_BG_COLOR};}}" + \
-                            f"QPushButton:hover {{background: {PRESET_HOVER_BG_COLOR};}}" + \
-                            f"QPushButton:pressed {{background: {PRESET_PRESSED_BG_COLOR};}}" + \
-                            f"QPushButton:disabled {{background: {PRESET_INACTIVE_BG_COLOR};}}"
-
-    # Other constants
     MAX_TEMPO = 260
     MIN_TEMPO = 20
     MAX_VOLUME = 100
     MIN_VOLUME = 0
     MAX_TAP_TIMES = 5  # maximum number of tap times to consider for tempo calculation
     TAP_TIMEOUT_MS = 5000  # timeout in milliseconds to end tap tempo mode
+    LONG_PRESS_DURATION_MS = 400  # duration in milliseconds to consider a button press as long press
 
     class TapState(Enum):
         """State of the tap tempo functionality."""
@@ -96,15 +106,18 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         ENDING_TAP_SEQUENCE = 3    # timeout reached; change button color, reset state, ...
 
 
-    def __init__(self, application_directory: str = ""):
+    def __init__(self, config: dict):
         """Initialize the main widget."""
+
+        # Initialize the UI
         super().__init__()
-        self._drag_position = QPoint()
         self.setupUi(self)
         self.setWindowTitle("Simple Metronome")
         self.menubar.hide()
         self.init_geometry()
-        self.pushButton_preset1.setStyleSheet(self.PRESET_ACTIVE_STYLE)
+
+        # Private variables.
+        self._drag_position = QPoint()  # for moving the window by dragging
 
         # Initialize variables for metronome state.
         self.player_downbeat = QSoundEffect()
@@ -123,19 +136,23 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.tap_timer.setTimerType(Qt.PreciseTimer)  # type: ignore
         self.tap_timer.timeout.connect(self.on_tap_tempo_timeout)
 
+        # Preset related variables
+        self.num_presets = 5
+        self.active_preset_index = 1
+        self.preset_pressed_times = [0] * self.num_presets
+        self.active_preset_altered = False
+
         # View mode state variable.
         self.view_mode_expanded = True
 
-        # Load resources.
+        # Resources needed for the GUI (symbol of the downbeat accent on/off button).
         self.icon_note = QIcon(":images/images/note-symbol.svg")
         self.icon_note_accent = QIcon(":images/images/note-accent-symbol.svg")
 
-        # Load the configuration.
-        self.config = {}
-        self.load_config()
-
-        # Initialize settings from the configuration.
-        self.init_with_config_values()
+        # Restore the program state from the configuration.
+        self.config = config
+        self.restore_program_state()
+        self.init_with_config_values()  # TODO: merge with restore_program_state()
 
         # Connect the GUI elements.
         self.connect_signals()
@@ -203,16 +220,9 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.shortcut_volume_100 = QShortcut(QKeySequence("F8"), self)
         self.shortcut_volume_100.activated.connect(lambda: self.slider_volume.setValue(100))
 
-        self.shortcut_load_preset_1 = QShortcut(QKeySequence("1"), self)
-        self.shortcut_load_preset_1.activated.connect(lambda:self.load_preset(1))
-        self.shortcut_load_preset_1 = QShortcut(QKeySequence("2"), self)
-        self.shortcut_load_preset_1.activated.connect(lambda:self.load_preset(2))
-        self.shortcut_load_preset_1 = QShortcut(QKeySequence("3"), self)
-        self.shortcut_load_preset_1.activated.connect(lambda:self.load_preset(3))
-        self.shortcut_load_preset_1 = QShortcut(QKeySequence("4"), self)
-        self.shortcut_load_preset_1.activated.connect(lambda:self.load_preset(4))
-        self.shortcut_load_preset_1 = QShortcut(QKeySequence("5"), self)
-        self.shortcut_load_preset_1.activated.connect(lambda:self.load_preset(5))
+        for i in range(1, self.num_presets + 1):
+            setattr(self, f"shortcut_load_preset_{i}", QShortcut(QKeySequence(str(i)), self))
+            getattr(self, f"shortcut_load_preset_{i}").activated.connect(lambda i=i: self.load_preset(i))  # capture current value of i to avoid cell-var-from-loop problem
 
         self.shortcut_toggle_view_mode = QShortcut(QKeySequence("M"), self)
         self.shortcut_toggle_view_mode.activated.connect(self.on_toggle_view_mode)
@@ -220,20 +230,18 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
     def closeEvent(self, event):
         """Handle the close event of the main window."""
-        self.save_config()
+        try:
+            package_dir = os.path.dirname(os.path.abspath(__file__))
+            save_config(self.config, config_dir=package_dir)
+        except Exception as e:  # pylint: disable=broad-except
+            QMessageBox.critical(self, "Error", f"Failed to save configuration to 'config.toml': {e}")
         event.accept()
 
 
     def connect_signals(self):
         """Connect GUI elements to their callback functions."""
-        self.pushButton_openDownbeatSoundFile.clicked.connect(lambda: self.on_open_downbeat_sound_file())
-        self.pushButton_openBackbeatSoundFile.clicked.connect(lambda: self.on_open_backbeat_sound_file())
-
-        self.pushButton_preset1.clicked.connect(self.on_preset1_clicked)
-        self.pushButton_preset2.clicked.connect(self.on_preset2_clicked)
-        self.pushButton_preset3.clicked.connect(self.on_preset3_clicked)
-        self.pushButton_preset4.clicked.connect(self.on_preset4_clicked)
-        self.pushButton_preset5.clicked.connect(self.on_preset5_clicked)
+        self.pushButton_openDownbeatSoundFile.clicked.connect(self.on_open_downbeat_sound_file)
+        self.pushButton_openBackbeatSoundFile.clicked.connect(self.on_open_backbeat_sound_file)
 
         self.pushButton_playStop.clicked.connect(self.on_play_stop_clicked)
         self.pushButton_tapTempo.clicked.connect(self.on_tap_tempo_clicked)
@@ -250,28 +258,36 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
         self.slider_volume.valueChanged.connect(self.on_volume_changed)
 
+        # for i in range(1, self.num_presets + 1):
+        #     getattr(self, f"pushButton_preset{i}").pressed.connect(getattr(self, f"on_preset{i}_pressed"))
+        #     getattr(self, f"pushButton_released{i}").pressed.connect(getattr(self, f"on_preset{i}_released"))
+        self.pushButton_preset1.pressed.connect(getattr(self, f"on_preset1_pressed"))
+        self.pushButton_preset1.pressed.connect(getattr(self, f"on_preset1_released"))
+
 
     def init_with_config_values(self):
         """Initialize the main window with configuration values."""
-        self.downbeat_accent = self.config["general_settings"]["downbeat_accent"]
+        self.downbeat_accent = self.config["program_state"]["downbeat_accent"]
         self.pushButton_downbeatAccent.setIcon(self.icon_note_accent if self.downbeat_accent else self.icon_note)
-        self.time_signature_numerator = int(self.config["general_settings"]["time_signature_numerator"])
-        self.time_signature_denominator = int(self.config["general_settings"]["time_signature_denominator"])
+        self.time_signature_numerator = int(self.config["program_state"]["time_signature_numerator"])
+        self.time_signature_denominator = int(self.config["program_state"]["time_signature_denominator"])
         self.set_time_signature(self.time_signature_numerator, self.time_signature_denominator)
-        self.tempo = int(self.config["general_settings"]["tempo"])
+        self.tempo = int(self.config["program_state"]["tempo"])
         self.slider_tempo.setValue(self.tempo)
-        self.config["general_settings"]["tempo"] = self.tempo
-        self.volume = int(self.config["general_settings"]["volume"])
+        self.config["program_state"]["tempo"] = self.tempo
+        self.volume = int(self.config["program_state"]["volume"])
         self.set_volume(self.volume)
 
-        self.downbeat_volume = self.config["general_settings"]["downbeat_volume"]
-        self.backbeat_volume = self.config["general_settings"]["backbeat_volume"]
-        self.current_downbeat_sound_file = self.config["preset1"]["downbeat_sound_file"]
-        self.current_backbeat_sound_file = self.config["preset1"]["backbeat_sound_file"]
-        self.player_downbeat.setSource(QUrl.fromLocalFile(self.current_downbeat_sound_file))
-        self.player_backbeat.setSource(QUrl.fromLocalFile(self.current_backbeat_sound_file))
+        self.downbeat_volume = self.config["general_settings"]["global_downbeat_volume"]
+        self.backbeat_volume = self.config["general_settings"]["global_backbeat_volume"]
+        self.current_downbeat_sound_file = self.config["preset1"]["downbeat_sound_file"] + ".wav"
+        self.current_backbeat_sound_file = self.config["preset1"]["backbeat_sound_file"] + ".wav"
+        package_dir = os.path.dirname(os.path.abspath(__file__))
+        self.player_downbeat.setSource(QUrl.fromLocalFile(os.path.join(package_dir, self.current_downbeat_sound_file)))
+        self.player_backbeat.setSource(QUrl.fromLocalFile(os.path.join(package_dir, self.current_backbeat_sound_file)))
         self.preset_downbeat_volume = self.config["preset1"]["downbeat_volume"]  # allows for correcting volume levels per preset
         self.preset_backbeat_volume = self.config["preset1"]["backbeat_volume"]  # allows for correcting volume levels per preset
+
 
     def init_geometry(self):
         """Initialize the geometry of the main window."""
@@ -292,36 +308,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         """Handle key release events. In particular, hide the menu bar when the Alt key is released."""
         if event.key() == Qt.Key_Alt:  # type: ignore
             self.menubar.hide()
-
-
-    def load_config(self):
-        """Load the configuration from a TOML file."""
-        try:
-            self.config = toml.load("config.toml")
-        except FileNotFoundError:
-            QMessageBox.warning(self, "Warning", "Configuration file 'config.toml' not found. Using default settings.")
-            self.config = default_config.config
-        except toml.TomlDecodeError as e:
-            QMessageBox.critical(self, "Error", f"Failed to parse configuration file 'config.toml': {e}")
-
-        # Check if all required tables along with key-value pairs are present; if not, use defaults.
-        anything_missing = False
-        for section, settings in default_config.config.items():
-            if section not in self.config:
-                self.config[section] = settings
-                anything_missing = True
-            else:
-                for key, value in settings.items():
-                    if key not in self.config[section]:
-                        self.config[section][key] = value
-                        anything_missing = True
-        if anything_missing:
-            QMessageBox.information(self, "Info", "Some configuration settings were missing in './config.toml'. Default values have been applied.")
-
-        sound_file_downbeat = self.config['preset1']['downbeat_sound_file']
-        sound_file_backbeat = self.config['preset1']['backbeat_sound_file']
-        self.player_downbeat.setSource(QUrl.fromLocalFile(sound_file_downbeat))
-        self.player_backbeat.setSource(QUrl.fromLocalFile(sound_file_backbeat))
 
 
     def load_preset(self, preset_number: int):
@@ -347,12 +333,14 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
 
     def mousePressEvent(self, event: QMouseEvent) -> None:
+        """Handle mouse press events for moving the window by dragging."""
         if event.button() == Qt.LeftButton:  # type: ignore
             self._drag_position = event.globalPosition().toPoint() - self.frameGeometry().topLeft()
             event.accept()
 
 
     def mouseMoveEvent(self, event: QMouseEvent) -> None:
+        """Handle mouse move events for moving the window by dragging."""
         if event.buttons() & Qt.LeftButton:  # type: ignore
             self.move(event.globalPosition().toPoint() - self._drag_position)
             event.accept()
@@ -401,6 +389,22 @@ class MainWindow(QMainWindow, Ui_MainWindow):
     def on_preset1_clicked(self):
         """Load the preset 1 configuration."""
         self.load_preset(1)
+        print("Preset 1 loaded.")
+
+
+    def on_preset1_pressed(self):
+        """Store the time when preset 1 button is pressed."""
+        self.preset1_pressed_time = time.time()
+
+
+    def on_preset1_released(self):
+        """Store the time when preset 1 button is pressed."""
+        delta = time.time() - self.preset1_pressed_time
+        if delta >= MainWindow.LONG_PRESS_DURATION_MS / 1000:
+            # Long press: save current configuration to preset 1.
+            # self.save_current_configuration_to_preset(1)
+            QMessageBox.information(self, "Info", "Current configuration saved to Preset 1.")
+
 
     def on_preset2_clicked(self):
         """Load the preset 2 configuration."""
@@ -442,8 +446,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             # First tap: store the current time and change the button color.
             self.tap_times_ns = [time.time_ns()]
             # Change the button color to indicate tap tempo mode.
-            style = "QPushButton {background-color:" + self.ACTIVE_ELEMENT_BG_COLOR + ";} " + \
-                    "QPushButton:pressed {background-color: " + self.ACTIVE_ELEMENT_PRESSED_BG_COLOR + ";}"
+            style = "QPushButton {background-color:" + ACTIVE_ELEMENT_BG_COLOR + ";} " + \
+                    "QPushButton:pressed {background-color: " + ACTIVE_ELEMENT_PRESSED_BG_COLOR + ";}"
             self.pushButton_tapTempo.setStyleSheet(style)
             self.tap_state = MainWindow.TapState.COLLECTING_TAPS
             # Start a single-shot timer to end the tap sequence after a timeout.
@@ -583,13 +587,13 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             QTimer.singleShot(0, self.play_sound_callback)
 
 
-    def save_config(self):
-        """Save the configuration to a TOML file."""
-        try:
-            with open("./config.toml", "w", encoding="utf-8") as file:
-                toml.dump(self.config, file)
-        except Exception as e:  # pylint: disable=broad-except
-            QMessageBox.critical(self, "Error", f"Failed to save configuration to './config.toml': {e}")
+    def restore_program_state(self):
+        """Restore the program state from the configuration."""
+        sound_file_downbeat = self.config['preset1']['downbeat_sound_file']
+        sound_file_backbeat = self.config['preset1']['backbeat_sound_file']
+        self.player_downbeat.setSource(QUrl.fromLocalFile(sound_file_downbeat))
+        self.player_backbeat.setSource(QUrl.fromLocalFile(sound_file_backbeat))
+        self.pushButton_preset1.setStyleSheet(PRESET_ACTIVE_STYLE)  # TODO
 
 
     def set_time_signature(self, numerator: int, denominator: int):

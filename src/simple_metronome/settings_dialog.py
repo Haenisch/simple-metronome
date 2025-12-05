@@ -17,7 +17,7 @@
 
 from PySide6.QtWidgets import QDialog, QMainWindow, QWidget
 from PySide6.QtCore import Signal
-from ui_settings_dialog import Ui_Settings
+from . ui_settings_dialog import Ui_Settings
 
 
 ##################################################################################################
