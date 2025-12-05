@@ -1,15 +1,29 @@
 [general_settings]
+gui_scale_factor = 1.0
+global_backbeat_volume = 80
+global_downbeat_volume = 100
+time_signature_numerator = 4
+time_signature_denominator = 4
+volume = 80
+tempo = 136
+
+[program_state]
+first_run = false
+active_preset_index = 1
+active_preset_altered = false
+backbeat_sound_file = "low click - backbeat"
+downbeat_sound_file = "low click - downbeat"
 backbeat_volume = 80
 downbeat_volume = 100
 downbeat_accent = true
-time_signature_numerator = 7
-time_signature_denominator = 9
-tempo = 125
-volume = 125
+time_signature_numerator = 4
+time_signature_denominator = 4
+tempo = 100
+volume = 80
 
 [preset1]
-backbeat_sound_file = "./sounds/low click - backbeat.wav"
-downbeat_sound_file = "./sounds/low click - downbeat.wav"
+backbeat_sound_file = "low click - backbeat"
+downbeat_sound_file = "low click - downbeat"
 backbeat_volume = 100
 downbeat_volume = 100
 downbeat_accent = true
@@ -19,8 +33,8 @@ tempo = 100
 volume = 80
 
 [preset2]
-backbeat_sound_file = "./sounds/high click - backbeat.wav"
-downbeat_sound_file = "./sounds/high click - downbeat.wav"
+backbeat_sound_file = "high click - backbeat"
+downbeat_sound_file = "high click - downbeat"
 backbeat_volume = 100
 downbeat_volume = 100
 downbeat_accent = true
@@ -30,8 +44,8 @@ tempo = 100
 volume = 80
 
 [preset3]
-backbeat_sound_file = "./sounds/click.wav"
-downbeat_sound_file = "./sounds/click.wav"
+backbeat_sound_file = "click"
+downbeat_sound_file = "click"
 backbeat_volume = 100
 downbeat_volume = 100
 downbeat_accent = true
@@ -41,8 +55,8 @@ tempo = 100
 volume = 80
 
 [preset4]
-backbeat_sound_file = "./sounds/click.wav"
-downbeat_sound_file = "./sounds/click.wav"
+backbeat_sound_file = "Taktell QM2"
+downbeat_sound_file = "Taktell QM2"
 backbeat_volume = 100
 downbeat_volume = 100
 downbeat_accent = true
@@ -52,8 +66,8 @@ tempo = 100
 volume = 80
 
 [preset5]
-backbeat_sound_file = "./sounds/click.wav"
-downbeat_sound_file = "./sounds/click.wav"
+backbeat_sound_file = "click"
+downbeat_sound_file = "click"
 backbeat_volume = 100
 downbeat_volume = 100
 downbeat_accent = true

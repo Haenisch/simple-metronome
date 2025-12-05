@@ -20,7 +20,7 @@ from PySide6.QtWidgets import (QAbstractSpinBox, QApplication, QFrame, QGridLayo
     QGroupBox, QHBoxLayout, QMainWindow, QMenu,
     QMenuBar, QPushButton, QSizePolicy, QSlider,
     QSpacerItem, QSpinBox, QVBoxLayout, QWidget)
-import resource_files_rc
+import simple_metronome.resource_files_rc
 
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):

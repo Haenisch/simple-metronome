@@ -7,7 +7,8 @@
 
 # Note, the application is based on files created with the Qt Designer. These
 # files have to be compiled to Python using pyside6-uic and pyside6-rcc,
-# respectively. The generated Python files are then imported here.
+# respectively. The generated Python files are then imported here or in other
+# modules of the application.
 #
 # These files are:
 #
@@ -27,30 +28,46 @@
 #     poetry run pyside6-uic settings_dialog.qrc -o ui_settings_dialog.py
 #     poetry run pyside6-rcc resource_files.qrc -o resource_files_rc.py
 
+# pylint: disable=line-too-long
+# pylint: disable=import-error
+
 import os
 import sys
 
-from PySide6.QtWidgets import QApplication  # pylint: disable=no-name-in-module
+from PySide6.QtWidgets import QApplication, QMessageBox  # pylint: disable=no-name-in-module
 from PySide6.QtGui import QIcon  # pylint: disable=no-name-in-module
-from main_window import MainWindow  # pylint: disable=import-error
+
+from . configuration import load_config
+from . main_window import MainWindow
+
 
 def main():
     """Main function."""
-    os.environ["QT_SCALE_FACTOR"] = "1.25"
+    # Load the configuration
+    package_dir = os.path.dirname(os.path.abspath(__file__))
+    config, status = load_config(config_dir=package_dir)
 
-    # Change current working directory to application directory
-    application_directory = os.path.dirname(os.path.abspath(__file__))
-    os.chdir(application_directory)
+    # Set the GUI scale factor from the configuration        
+    scale_factor = config["general_settings"]["gui_scale_factor"]
+    os.environ["QT_SCALE_FACTOR"] = str(scale_factor)
 
     # Create the application and set the style
     app = QApplication(sys.argv)
     app.setStyle("Windows11")
-    with open("style.qss", "r", encoding="utf-8") as file:
+    with open(os.path.join(package_dir, "style.qss"), "r", encoding="utf-8") as file:
         app.setStyleSheet(file.read())
 
+    # Show message boxes in case of configuration loading issues
+    if status.code == status.FILE_NOT_FOUND:
+        QMessageBox.information(None, "Configuration File Not Found", status.message)
+    elif status.code == status.PARSE_ERROR:
+        QMessageBox.information(None, "Configuration File Parse Error", status.message)
+    elif status.code == status.MISSING_SETTINGS:
+        QMessageBox.information(None, "Missing Configuration Settings", status.message)
+
     # Create and show the main window
-    window = MainWindow()
-    icon = QIcon("images/metronome-icon.png")
+    window = MainWindow(config)
+    icon = QIcon(os.path.join(package_dir, "images/metronome-icon.png"))
     window.setWindowIcon(icon)
     window.show()
 
