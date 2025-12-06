@@ -6,16 +6,16 @@ regular_beats_volume = 80
 [program_state]
 first_run = false
 active_preset_index = 1
-active_preset_altered = true
+active_preset_altered = false
 enable_downbeat = true
 downbeat_sound = "click (default)"
 downbeat_volume = 100
 regular_beats_sound = "click (low)"
 regular_beats_volume = 80
-time_signature_numerator = 3
+time_signature_numerator = 4
 time_signature_denominator = 4
-tempo = 170
-volume = 24
+tempo = 150
+volume = 80
 
 [preset1]
 enable_downbeat = true
@@ -25,7 +25,7 @@ regular_beats_sound = "click (low)"
 regular_beats_volume = 80
 time_signature_numerator = 4
 time_signature_denominator = 4
-tempo = 100
+tempo = 150
 volume = 80
 
 [preset2]
@@ -36,36 +36,36 @@ regular_beats_sound = "click (lowest)"
 regular_beats_volume = 80
 time_signature_numerator = 4
 time_signature_denominator = 4
-tempo = 100
+tempo = 150
 volume = 80
 
 [preset3]
 enable_downbeat = true
-downbeat_sound = "click (lower)"
+downbeat_sound = "Taktell QM2"
 downbeat_volume = 100
-regular_beats_sound = "click (lowest)"
+regular_beats_sound = "Taktell QM2"
 regular_beats_volume = 80
-time_signature_numerator = 4
+time_signature_numerator = 3
 time_signature_denominator = 4
-tempo = 100
+tempo = 200
 volume = 80
 
 [preset4]
 enable_downbeat = true
-downbeat_sound = "click (lower)"
+downbeat_sound = "click (default, slightly louder)"
 downbeat_volume = 100
-regular_beats_sound = "click (lowest)"
+regular_beats_sound = "click (default)"
 regular_beats_volume = 80
-time_signature_numerator = 4
-time_signature_denominator = 4
-tempo = 100
+time_signature_numerator = 6
+time_signature_denominator = 8
+tempo = 200
 volume = 80
 
 [preset5]
 enable_downbeat = true
-downbeat_sound = "click (lower)"
+downbeat_sound = "Taktell QM2"
 downbeat_volume = 100
-regular_beats_sound = "click (lowest)"
+regular_beats_sound = "Taktell QM2"
 regular_beats_volume = 80
 time_signature_numerator = 4
 time_signature_denominator = 4

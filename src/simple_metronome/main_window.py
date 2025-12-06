@@ -37,7 +37,7 @@ ACTIVE_ELEMENT_PRESSED_BG_COLOR = "#004A8F"
 INACTIVE_ELEMENT_BG_COLOR = "#505050"
 
 PRESET_ACTIVE_BG_COLOR = "#44505a"
-PRESET_ALTERED_BG_COLOR = "#5e2424"
+PRESET_ALTERED_BG_COLOR = "#5c3939"
 PRESET_HOVER_BG_COLOR = "#505050"
 PRESET_INACTIVE_BG_COLOR = "#3b3b3b"
 PRESET_PRESSED_BG_COLOR = "#2b2b2b"
@@ -48,7 +48,7 @@ PRESET_ACTIVE_STYLE = f"QPushButton {{background: {PRESET_ACTIVE_BG_COLOR};}}" +
                         f"QPushButton:disabled {{background: {PRESET_INACTIVE_BG_COLOR};}}"
 
 PRESET_ALTERED_STYLE = f"QPushButton {{background: {PRESET_ALTERED_BG_COLOR};}}" + \
-                        f"QPushButton:hover {{background: {PRESET_HOVER_BG_COLOR};}}" + \
+                        f"QPushButton:hover {{background: {PRESET_ALTERED_BG_COLOR};}}" + \
                         f"QPushButton:pressed {{background: {PRESET_PRESSED_BG_COLOR};}}" + \
                         f"QPushButton:disabled {{background: {PRESET_INACTIVE_BG_COLOR};}}"
 
@@ -154,7 +154,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         # Preset related variables
         self.num_presets = 5
         self.active_preset_index = 1
-        self.preset_pressed_times = [0] * self.num_presets
+        self.preset_pressed_times = [0.0] * self.num_presets
         self.active_preset_altered = False
 
         # Resources needed for the GUI (symbol of the downbeat accent on/off button).
@@ -164,6 +164,9 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         # Restore the program state from the configuration.
         self.config = config
         self.restore_from_config()
+
+        # Create the preset callback functions dynamically.
+        self.create_preset_callbacks()
 
         # Connect the GUI elements.
         self.connect_signals()
@@ -233,7 +236,11 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
         for i in range(1, self.num_presets + 1):
             setattr(self, f"shortcut_load_preset_{i}", QShortcut(QKeySequence(str(i)), self))
-            getattr(self, f"shortcut_load_preset_{i}").activated.connect(lambda i=i: self.load_preset(i))  # capture current value of i to avoid cell-var-from-loop problem
+            getattr(self, f"shortcut_load_preset_{i}").activated.connect(lambda i=i:
+                                                                         (self.mark_current_preset_as_inactive(),
+                                                                          setattr(self, "active_preset_index", i),
+                                                                          self.load_preset()
+                                                                         ))  # capture current value of i to avoid cell-var-from-loop problem
 
         self.shortcut_toggle_view_mode = QShortcut(QKeySequence("M"), self)
         self.shortcut_toggle_view_mode.activated.connect(self.on_toggle_view_mode)
@@ -270,14 +277,39 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.spinBox_timeSignatureNumerator.valueChanged.connect(self.on_time_signature_numerator_changed)
 
         self.spinBox_tempo.valueChanged.connect(self.set_tempo)
-
         self.slider_volume.valueChanged.connect(self.on_volume_changed)
 
-        # for i in range(1, self.num_presets + 1):
-        #     getattr(self, f"pushButton_preset{i}").pressed.connect(getattr(self, f"on_preset{i}_pressed"))
-        #     getattr(self, f"pushButton_released{i}").pressed.connect(getattr(self, f"on_preset{i}_released"))
-        self.pushButton_preset1.pressed.connect(getattr(self, f"on_preset1_pressed"))
-        self.pushButton_preset1.pressed.connect(getattr(self, f"on_preset1_released"))
+
+    def create_preset_callbacks(self):
+        """Create the preset callback functions dynamically."""
+
+        # ① Define on_preset_pressed functions
+        for i in range(1, self.num_presets + 1):
+            def on_preset_pressed(self, preset_number: int):
+                """Store the time when the preset button is pressed."""
+                self.preset_pressed_times[preset_number - 1] = time.time()
+            setattr(self, f"on_preset{i}_pressed", lambda preset_number=i: on_preset_pressed(self, preset_number))  # pylint: disable=cell-var-from-loop
+
+        # ② Define on_preset_released functions
+        for i in range(1, self.num_presets + 1):
+            def on_preset_released(self, preset_number: int):
+                """Load or store preset depending on the duration of the press."""
+                delta = time.time() - self.preset_pressed_times[preset_number - 1]
+                if delta >= MainWindow.LONG_PRESS_DURATION_MS / 1000:
+                    # Long press: save current configuration to preset
+                    self.save_current_configuration_to_preset(preset_number)
+                    QMessageBox.information(self, "Info", f"Current configuration saved to Preset {preset_number}.")
+                else:
+                    # Short press: load preset.
+                    self.mark_current_preset_as_inactive()  # reset style of previous active preset
+                    self.active_preset_index = preset_number
+                    self.load_preset()
+            setattr(self, f"on_preset{i}_released", lambda preset_number=i: on_preset_released(self, preset_number))  # pylint: disable=cell-var-from-loop
+
+        # ③ Bind them to the buttons
+        for i in range(1, self.num_presets + 1):
+            getattr(self, f"pushButton_preset{i}").pressed.connect(getattr(self, f"on_preset{i}_pressed"))
+            getattr(self, f"pushButton_preset{i}").released.connect(getattr(self, f"on_preset{i}_released"))
 
 
     def init_geometry(self):
@@ -301,9 +333,12 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             self.menubar.hide()
 
 
-    def load_preset(self, preset_number: int):
-        """Load a preset configuration."""
-        preset_key = f"preset{preset_number}"
+    def load_preset(self):
+        """Load a preset configuration.
+        
+        Note, the active preset index must be set before calling this function.
+        """
+        preset_key = f"preset{self.active_preset_index}"
         if preset_key not in self.config:
             QMessageBox.critical(self, "Error", f"Preset '{preset_key}' not found in configuration.")
             return
@@ -323,12 +358,26 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.set_tempo(int(preset["tempo"]))
         self.set_volume(int(preset["volume"]))
 
+        self.mark_active_preset_as_unaltered()
 
-    def mark_active_preset_as_modified(self):
+
+    def mark_active_preset_as_altered(self):
         """Mark the active preset as altered."""
         self.active_preset_altered = True
         self.config["program_state"]["active_preset_altered"] = True
-        setattr(self, f"pushButton_preset{self.active_preset_index}.setStyleSheet", PRESET_ALTERED_STYLE)
+        getattr(self, f"pushButton_preset{self.active_preset_index}").setStyleSheet(PRESET_ALTERED_STYLE)
+
+
+    def mark_active_preset_as_unaltered(self):
+        """Mark the active preset as unaltered."""
+        self.active_preset_altered = False
+        self.config["program_state"]["active_preset_altered"] = False
+        getattr(self, f"pushButton_preset{self.active_preset_index}").setStyleSheet(PRESET_ACTIVE_STYLE)
+
+
+    def mark_current_preset_as_inactive(self):
+        """Mark the current preset as inactive."""
+        getattr(self, f"pushButton_preset{self.active_preset_index}").setStyleSheet(PRESET_INACTIVE_STYLE)
 
 
     def mousePressEvent(self, event: QMouseEvent) -> None:
@@ -379,46 +428,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             # TODO: visual beat indication
         else:
             self.playing = False
-
-
-    def on_preset1_clicked(self):
-        """Load the preset 1 configuration."""
-        self.load_preset(1)
-        print("Preset 1 loaded.")
-
-
-    def on_preset1_pressed(self):
-        """Store the time when preset 1 button is pressed."""
-        self.preset1_pressed_time = time.time()
-
-
-    def on_preset1_released(self):
-        """Store the time when preset 1 button is pressed."""
-        delta = time.time() - self.preset1_pressed_time
-        if delta >= MainWindow.LONG_PRESS_DURATION_MS / 1000:
-            # Long press: save current configuration to preset 1.
-            # self.save_current_configuration_to_preset(1)
-            QMessageBox.information(self, "Info", "Current configuration saved to Preset 1.")
-
-
-    def on_preset2_clicked(self):
-        """Load the preset 2 configuration."""
-        self.load_preset(2)
-
-
-    def on_preset3_clicked(self):
-        """Load the preset 3 configuration."""
-        self.load_preset(3)
-
-
-    def on_preset4_clicked(self):
-        """Load the preset 4 configuration."""
-        self.load_preset(4)
-
-
-    def on_preset5_clicked(self):
-        """Load the preset 5 configuration."""
-        self.load_preset(5)
 
 
     def on_tap_tempo_clicked(self):
@@ -621,6 +630,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.first_run = self.config["program_state"]["first_run"]  # TODO: open info dialog on first run
         self.active_preset_index = self.config["program_state"]["active_preset_index"]
         self.active_preset_altered = self.config["program_state"]["active_preset_altered"]
+        active_preset_altered = self.active_preset_altered  # save local copy before restoring other settings
         self.enable_downbeat = self.config["program_state"]["enable_downbeat"]
         self.pushButton_downbeat.setIcon(self.icon_note_accent if self.enable_downbeat else self.icon_note)
         self.downbeat_sound = self.config["program_state"]["downbeat_sound"]
@@ -637,10 +647,30 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.volume = int(self.config["program_state"]["volume"])
         self.set_volume(self.volume)
 
-        if self.active_preset_altered:
-            setattr(self, f"pushButton_preset{self.active_preset_index}.setStyleSheet", PRESET_ALTERED_STYLE)
+        if active_preset_altered:
+            self.mark_active_preset_as_altered()
         else:
-            setattr(self, f"pushButton_preset{self.active_preset_index}.setStyleSheet", PRESET_ACTIVE_STYLE)
+            self.mark_active_preset_as_unaltered()
+
+
+    def save_current_configuration_to_preset(self, preset_number: int):
+        """Save preset in configuration stored in memory."""
+        preset_key = f"preset{preset_number}"
+        if preset_key not in self.config:
+            QMessageBox.critical(self, "Error", f"Preset '{preset_key}' not found in configuration.")
+            return
+
+        preset = self.config[preset_key]
+        preset["enable_downbeat"] = self.enable_downbeat
+        preset["downbeat_sound"] = self.downbeat_sound
+        preset["downbeat_volume"] = self.downbeat_volume
+        preset["regular_beats_sound"] = self.regular_beats_sound
+        preset["regular_beats_volume"] = self.regular_beats_volume
+        preset["time_signature_numerator"] = self.time_signature_numerator
+        preset["time_signature_denominator"] = self.time_signature_denominator
+        preset["tempo"] = self.tempo
+        preset["volume"] = self.volume
+        self.mark_active_preset_as_unaltered()
 
 
     def set_downbeat_accent(self, enable: bool):
@@ -648,7 +678,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.enable_downbeat = enable
         self.pushButton_downbeat.setIcon(self.icon_note_accent if enable else self.icon_note)
         self.config["program_state"]["enable_downbeat"] = enable
-        self.mark_active_preset_as_modified()
+        self.mark_active_preset_as_altered()
 
 
     def set_sound(self, beat: str, sound: str):
@@ -668,7 +698,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             self.regular_beats_sound = sound
             self.config["program_state"]["regular_beats_sound"] = sound
             self.player_regular_beats.setSource(QUrl.fromLocalFile(full_path))
-        self.mark_active_preset_as_modified()
+        self.mark_active_preset_as_altered()
 
 
     def set_time_signature(self, numerator: int, denominator: int):
@@ -679,7 +709,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.spinBox_timeSignatureDenominator.setValue(denominator)
         self.config["program_state"]["time_signature_numerator"] = numerator
         self.config["program_state"]["time_signature_denominator"] = denominator
-        self.mark_active_preset_as_modified()
+        self.mark_active_preset_as_altered()
 
 
     def set_tempo(self, tempo: int):
@@ -687,7 +717,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.tempo = tempo
         self.slider_tempo.setValue(tempo)
         self.config["program_state"]["tempo"] = tempo
-        self.mark_active_preset_as_modified()
+        self.mark_active_preset_as_altered()
 
 
     def set_volume(self, volume: int):
@@ -695,7 +725,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.volume = volume
         self.slider_volume.setValue(volume)
         self.config["program_state"]["volume"] = volume
-        self.mark_active_preset_as_modified()
+        self.mark_active_preset_as_altered()
 
 
     def setup_menubar(self):
